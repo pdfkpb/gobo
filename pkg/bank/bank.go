@@ -9,6 +9,7 @@ import (
 
 var (
 	ErrUserNotRegistered = errors.New("user not found")
+	ErrInvalidAmount     = errors.New("invalid monies amount")
 	ErrUnhandledError    = errors.New("didn't bother to catch it")
 )
 
