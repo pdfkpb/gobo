@@ -7,13 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	ErrUserNotRegistered = errors.New("user not found")
+	ErrUnhandledError    = errors.New("didn't bother to catch it")
+)
+
 type BankDB struct {
 	db *gorm.DB
 }
 
 type Bank struct {
 	gorm.Model
-	userID int `gorm:"primarykey"`
+	userID string `gorm:"primarykey"`
 	funds  int
 }
 
@@ -30,25 +35,30 @@ func LoadBankDB() (*BankDB, error) {
 	}, nil
 }
 
-func (bdb *BankDB) AddUser(userID int) {
+func (bdb *BankDB) AddUser(userID string) {
 	bdb.db.Create(&Bank{
 		userID: userID,
 		funds:  0,
 	})
 }
 
-func (bdb *BankDB) CheckFunds(userID int) (int, error) {
+func (bdb *BankDB) CheckFunds(userID string) (int, error) {
 	var bank Bank
 	result := bdb.db.First(&bank, userID)
 
 	if result.Error != nil {
-		return 0, result.Error
+		switch result.Error {
+		case gorm.ErrRecordNotFound:
+			return 0, ErrUserNotRegistered
+		default:
+			return 0, ErrUnhandledError
+		}
 	}
 
 	return bank.funds, nil
 }
 
-func (bdb *BankDB) AddFunds(userID int, amount int) error {
+func (bdb *BankDB) AddFunds(userID string, amount int) error {
 	if amount < 0 {
 		return errors.New("")
 	}
@@ -65,7 +75,7 @@ func (bdb *BankDB) AddFunds(userID int, amount int) error {
 	return bdb.db.Save(bank).Error
 }
 
-func (bdb *BankDB) TakeFunds(userID int, amount int) error {
+func (bdb *BankDB) TakeFunds(userID string, amount int) error {
 	if amount < 0 {
 		return errors.New("")
 	}
