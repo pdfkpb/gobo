@@ -37,6 +37,17 @@ func (bdb *BankDB) AddUser(userID int) {
 	})
 }
 
+func (bdb *BankDB) CheckFunds(userID int) (int, error) {
+	var bank Bank
+	result := bdb.db.First(&bank, userID)
+
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	return bank.funds, nil
+}
+
 func (bdb *BankDB) AddFunds(userID int, amount int) error {
 	if amount < 0 {
 		return errors.New("")
