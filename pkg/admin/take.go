@@ -33,8 +33,8 @@ func Take(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	uid := params[0][2:20]
-	giveTo, err := s.User(uid)
-	if err != nil || giveTo == nil {
+	takeFrom, err := s.User(uid)
+	if err != nil || takeFrom == nil {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", params[0]))
 		return
 	}
@@ -53,7 +53,7 @@ func Take(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	currentFunds, err := bankDB.TakeFunds(uid, amount)
+	currentFunds, err := bankDB.TakeFunds(takeFrom.ID, amount)
 	if err != nil {
 		switch err {
 		case bank.ErrInvalidAmount:

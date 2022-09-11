@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/gobo/pkg/bank"
 )
 
 var (
@@ -22,9 +23,16 @@ func printHelp() {
 	)
 }
 
-func Go(bank map[string]int, params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func Go(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	session = s
 	msgCreate = m
+
+	bankDB, err := bank.LoadBankDB()
+	if err != nil {
+		fmt.Printf("failed to load bankDB: %v\n", err)
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		return
+	}
 
 	if len(params) == 3 {
 		if strings.ToLower(params[0]) == "dice" {
@@ -39,9 +47,14 @@ func Go(bank map[string]int, params []string, s *discordgo.Session, m *discordgo
 				return
 			}
 
-			user := m.Author.ID
-			if bank[user] < amt {
-				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Insufficent funds, <@%s> only has %d monies", user, bank[user]))
+			userID := m.Author.ID
+			funds, err := bankDB.CheckFunds(userID)
+			if err != nil {
+
+			}
+
+			if funds < amt {
+				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Insufficent funds, <@%s> only has %d monies", userID, funds))
 				return
 			}
 
@@ -56,11 +69,17 @@ func Go(bank map[string]int, params []string, s *discordgo.Session, m *discordgo
 			}
 
 			if overOrUnder == "over" && n > 7 || overOrUnder == "under" && n < 7 {
-				bank[user] += amt
-				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d you win! You now have %d", user, n, bank[user]))
+				currentFunds, err := bankDB.AddFunds(userID, amt)
+				if err != nil {
+
+				}
+				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d you win! You now have %d", userID, n, currentFunds))
 			} else {
-				bank[user] -= amt
-				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d you lose ¯\\_(ツ)_/¯ you still have %d", user, n, bank[user]))
+				currentFunds, err := bankDB.TakeFunds(userID, amt)
+				if err != nil {
+
+				}
+				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d you lose ¯\\_(ツ)_/¯ you still have %d", userID, n, currentFunds))
 			}
 		} else {
 			s.ChannelMessageSend(m.ChannelID, "Dice is the only game currently")

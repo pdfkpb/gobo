@@ -51,7 +51,7 @@ func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	currentFunds, err := bankDB.AddFunds(uid, amount)
+	currentFunds, err := bankDB.AddFunds(giveTo.ID, amount)
 	if err != nil {
 		switch err {
 		case bank.ErrInvalidAmount:

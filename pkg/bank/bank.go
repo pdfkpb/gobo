@@ -8,19 +8,20 @@ import (
 )
 
 var (
-	ErrUserNotRegistered = errors.New("user not found")
-	ErrInvalidAmount     = errors.New("invalid monies amount")
-	ErrUnhandledError    = errors.New("didn't bother to catch it")
+	ErrUserNotRegistered       = errors.New("user not found")
+	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
+	ErrInvalidAmount           = errors.New("invalid monies amount")
+	ErrUnhandledError          = errors.New("didn't bother to catch it")
 )
 
 type BankDB struct {
 	db *gorm.DB
 }
 
-type Bank struct {
+type bank struct {
 	gorm.Model
-	userID string `gorm:"primarykey"`
-	funds  int
+	UserID string `gorm:"primaryKey"`
+	Funds  int
 }
 
 func LoadBankDB() (*BankDB, error) {
@@ -29,23 +30,33 @@ func LoadBankDB() (*BankDB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&Bank{})
+	db.AutoMigrate(&bank{})
 
 	return &BankDB{
 		db: db,
 	}, nil
 }
 
-func (bdb *BankDB) AddUser(userID string) {
-	bdb.db.Create(&Bank{
-		userID: userID,
-		funds:  0,
+func (bdb *BankDB) AddUser(userID string) error {
+	result := bdb.db.Create(&bank{
+		UserID: userID,
+		Funds:  1000,
 	})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected > 0 {
+		return nil
+	} else {
+		return ErrorUserAlreadyRegistered
+	}
 }
 
 func (bdb *BankDB) CheckFunds(userID string) (int, error) {
-	var bank Bank
-	result := bdb.db.First(&bank, userID)
+	var bank bank
+	result := bdb.db.First(&bank, "user_id = ?", userID)
 
 	if result.Error != nil {
 		switch result.Error {
@@ -56,53 +67,49 @@ func (bdb *BankDB) CheckFunds(userID string) (int, error) {
 		}
 	}
 
-	return bank.funds, nil
+	return bank.Funds, nil
 }
 
 func (bdb *BankDB) AddFunds(userID string, amount int) (int, error) {
 	if amount < 0 {
-		return 0, errors.New("")
+		return 0, ErrInvalidAmount
 	}
 
-	var bank Bank
-	result := bdb.db.First(&bank, userID)
+	var bank bank
+	result := bdb.db.First(&bank, "user_id = ?", userID)
 
 	if result.Error != nil {
 		return 0, result.Error
 	}
 
-	bank.funds += amount
-
-	result = bdb.db.Save(bank)
+	result = bdb.db.Model(&bank).Update("funds", bank.Funds+amount)
 	if result.Error != nil {
 		return 0, result.Error
 	}
 
-	return bank.funds, nil
+	return bank.Funds, nil
 }
 
 func (bdb *BankDB) TakeFunds(userID string, amount int) (int, error) {
 	if amount < 0 {
-		return 0, errors.New("")
+		return 0, ErrInvalidAmount
 	}
 
-	var bank Bank
-	result := bdb.db.First(&bank, userID)
+	var bank bank
+	result := bdb.db.First(&bank, "user_id = ?", userID)
 
 	if result.Error != nil {
 		return 0, result.Error
 	}
 
-	if bank.funds-amount < 0 {
-		return 0, errors.New("funds cannot be negative")
+	if bank.Funds-amount < 0 {
+		return 0, errors.New("Funds cannot be negative")
 	}
 
-	bank.funds -= amount
-
-	result = bdb.db.Save(bank)
+	result = bdb.db.Model(&bank).Update("funds", bank.Funds-amount)
 	if result.Error != nil {
 		return 0, result.Error
 	}
 
-	return bank.funds, nil
+	return bank.Funds, nil
 }
