@@ -28,7 +28,7 @@ func Take(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	match, err := regexp.Match("<@[0-9]{18}>", []byte(params[0]))
 	if !match || err != nil {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Not a user id"))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("  Usage: %s", HelpTake))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpTake))
 		return
 	}
 
@@ -42,7 +42,7 @@ func Take(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	amount, err := strconv.Atoi(params[1])
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Not a valid monies amount"))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("  Usage: %s", HelpTake))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpTake))
 		return
 	}
 
@@ -53,10 +53,15 @@ func Take(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	currentFunds, err := bankDB.AddFunds(uid, amount)
+	currentFunds, err := bankDB.TakeFunds(uid, amount)
 	if err != nil {
-		fmt.Printf("failed to add funds: %v\n", err)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		switch err {
+		case bank.ErrInvalidAmount:
+			s.ChannelMessageSend(m.ChannelID, err.Error())
+		default:
+			fmt.Printf("failed to add funds: %v\n", err)
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		}
 		return
 	}
 

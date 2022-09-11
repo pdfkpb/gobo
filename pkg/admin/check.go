@@ -7,6 +7,8 @@ import (
 	"github.com/gobo/pkg/bank"
 )
 
+const HelpCheck = "!check"
+
 func Check(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	bankDB, err := bank.LoadBankDB()
 	if err != nil {
