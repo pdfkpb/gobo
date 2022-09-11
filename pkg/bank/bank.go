@@ -58,40 +58,50 @@ func (bdb *BankDB) CheckFunds(userID string) (int, error) {
 	return bank.funds, nil
 }
 
-func (bdb *BankDB) AddFunds(userID string, amount int) error {
+func (bdb *BankDB) AddFunds(userID string, amount int) (int, error) {
 	if amount < 0 {
-		return errors.New("")
+		return 0, errors.New("")
 	}
 
 	var bank Bank
 	result := bdb.db.First(&bank, userID)
 
 	if result.Error != nil {
-		return result.Error
+		return 0, result.Error
 	}
 
 	bank.funds += amount
 
-	return bdb.db.Save(bank).Error
+	result = bdb.db.Save(bank)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	return bank.funds, nil
 }
 
-func (bdb *BankDB) TakeFunds(userID string, amount int) error {
+func (bdb *BankDB) TakeFunds(userID string, amount int) (int, error) {
 	if amount < 0 {
-		return errors.New("")
+		return 0, errors.New("")
 	}
 
 	var bank Bank
 	result := bdb.db.First(&bank, userID)
 
 	if result.Error != nil {
-		return result.Error
+		return 0, result.Error
 	}
 
 	if bank.funds-amount < 0 {
-		return errors.New("funds cannot be negative")
+		return 0, errors.New("funds cannot be negative")
 	}
 
 	bank.funds -= amount
 
-	return bdb.db.Save(bank).Error
+	result = bdb.db.Save(bank)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	return bank.funds, nil
 }
