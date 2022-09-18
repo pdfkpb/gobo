@@ -84,13 +84,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		admin.Check(params, s, m)
 	case "register":
 		admin.RegisterUser(params, s, m)
-	case "bet":
-		switch strings.ToLower(params[0]) {
-		case "dice":
-			dice.Go(params, s, m)
-		default:
-			s.ChannelMessageSend(m.ChannelID, "Game not implemented")
-		}
+	case "dice":
+		dice.Play(params, s, m)
 	default:
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Usage: "))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  %s", admin.HelpGive))

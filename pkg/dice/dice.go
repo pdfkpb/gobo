@@ -23,7 +23,7 @@ func printHelp() {
 	)
 }
 
-func Go(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	session = s
 	msgCreate = m
 
