@@ -136,7 +136,12 @@ func (pdb *PatronDB) GetLotteryWinner() ([]string, int, error) {
 	var patrons []Patron
 	result := pdb.db.Order("lottery_roll desc").Where("lottery_roll > ?", 0).First(&patrons)
 	if result.Error != nil {
-		return []string{}, 0, ErrUnhandledError
+		switch result.Error {
+		case gorm.ErrRecordNotFound:
+			return []string{}, 0, nil
+		default:
+			return []string{}, 0, ErrUnhandledError
+		}
 	}
 
 	var winners []string
