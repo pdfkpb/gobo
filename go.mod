@@ -1,4 +1,4 @@
-module github.com/gobo
+module github.com/pdfkpb/gobo
 
 go 1.18
 

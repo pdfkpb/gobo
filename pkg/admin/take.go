@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/gobo/pkg/bank"
+	"github.com/pdfkpb/gobo/pkg/bank"
 )
 
 const (

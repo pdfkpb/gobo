@@ -10,8 +10,8 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/gobo/pkg/admin"
-	"github.com/gobo/pkg/dice"
+	"github.com/pdfkpb/gobo/pkg/admin"
+	"github.com/pdfkpb/gobo/pkg/dice"
 )
 
 const (
