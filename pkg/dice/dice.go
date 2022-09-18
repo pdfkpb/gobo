@@ -16,12 +16,7 @@ var (
 	msgCreate *discordgo.MessageCreate
 )
 
-func printHelp() {
-	session.ChannelMessageSend(
-		msgCreate.ChannelID,
-		fmt.Sprintf("USAGE: !bet dice <amount> over | under"),
-	)
-}
+const HelpPlay = "USAGE: !bet dice <amount> over | under"
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	session = s

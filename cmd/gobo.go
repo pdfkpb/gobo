@@ -87,7 +87,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case "dice":
 		dice.Play(params, s, m)
 	default:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Usage: "))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Games: "))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  %s", dice.HelpPlay))
+
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Admin: "))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  %s", admin.HelpGive))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  %s", admin.HelpTake))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  %s", admin.HelpCheck))
