@@ -148,7 +148,7 @@ func (pdb *PatronDB) GetLotteryWinner() ([]string, int, error) {
 }
 
 func (pdb *PatronDB) ClearLottery() error {
-	result := pdb.db.Model(&Patron{}).Update("lottery_roll", 0)
+	result := pdb.db.Model(&Patron{}).Where("1 = 1").Update("lottery_roll", 0)
 	if result.Error != nil {
 		return ErrUnhandledError
 	}
