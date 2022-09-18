@@ -4,14 +4,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
 	"github.com/pdfkpb/gobo/pkg/games/dice"
+	"github.com/pdfkpb/gobo/pkg/games/lottery"
 )
 
 const (
@@ -49,14 +48,15 @@ func main() {
 		return
 	}
 
-	// Wait here until CTRL-C or other term signal is received.
-	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
+	defer dg.Close()
 
-	// Cleanly close down the Discord session.
-	dg.Close()
+	lotteryTicker := time.NewTicker(1 * time.Minute)
+	for {
+		select {
+		case <-lotteryTicker.C:
+			lottery.ItsLotteryTime(dg)
+		}
+	}
 }
 
 var bank = map[string]int{}
