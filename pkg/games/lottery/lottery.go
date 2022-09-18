@@ -33,8 +33,13 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	userID := m.Author.ID
 	err = patronDB.SetLotteryRoll(userID, realRoll)
 	if err != nil {
-		fmt.Printf("lottery failed to set users roll %v\n", err)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
+		switch err {
+		case patron.ErrAlreadyLotteryRolled:
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Hey, knock it off, you already rolled"))
+		default:
+			fmt.Printf("lottery failed to set users roll %v\n", err)
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
+		}
 		return
 	}
 

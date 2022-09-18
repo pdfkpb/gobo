@@ -11,6 +11,7 @@ var (
 	ErrUserNotRegistered       = errors.New("user not found")
 	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
+	ErrAlreadyLotteryRolled    = errors.New("this user already rolled for the lottery")
 	ErrUnhandledError          = errors.New("didn't bother to catch it")
 )
 
@@ -120,7 +121,7 @@ func (pdb *PatronDB) SetLotteryRoll(userID string, roll int) error {
 	var patron Patron
 	result := pdb.db.Where("lottery_roll = ?", 0).First(&patron, "user_id = ?", userID)
 	if result.Error != nil {
-		return ErrUserNotRegistered
+		return ErrAlreadyLotteryRolled
 	}
 
 	result = pdb.db.Model(&patron).Update("lottery_roll", roll)
