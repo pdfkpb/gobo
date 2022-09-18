@@ -47,7 +47,7 @@ func ItsLotteryTime(s *discordgo.Session) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load PatronDB: %v\n", err)
-		s.ChannelMessageSend("513950048057425934", fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
@@ -61,5 +61,5 @@ func ItsLotteryTime(s *discordgo.Session) {
 
 	}
 
-	s.ChannelMessageSend("513950048057425934", fmt.Sprintf("<@%s> rolled a %d you win! You now have %d", winner, roll, currentFunds))
+	s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("<@%s> rolled a %d you win! You now have %d", winner, roll, currentFunds))
 }

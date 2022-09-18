@@ -132,7 +132,7 @@ func (pdb *PatronDB) SetLotteryRoll(userID string, roll int) error {
 
 func (pdb *PatronDB) GetLotteryWinner() (string, int, error) {
 	var patron Patron
-	result := pdb.db.Order("lotter_roll desc").First(&patron)
+	result := pdb.db.Order("lottery_roll desc").First(&patron)
 	if result.Error != nil {
 		return "", 0, ErrUnhandledError
 	}
