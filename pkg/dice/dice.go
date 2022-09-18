@@ -16,7 +16,7 @@ var (
 	msgCreate *discordgo.MessageCreate
 )
 
-const HelpPlay = "USAGE: !dice <amount> over | under"
+const HelpPlay = "!dice <amount> over | under"
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	session = s
@@ -35,7 +35,7 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	amt, err := strconv.Atoi(params[1])
+	amt, err := strconv.Atoi(params[0])
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "Not a valid amount to bet")
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpPlay))
@@ -65,7 +65,7 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	two, _ := rand.Int(rand.Reader, big.NewInt(6))
 	n := one.Int64() + two.Int64() + 2
 
-	overOrUnder := strings.ToLower(params[2])
+	overOrUnder := strings.ToLower(params[1])
 	if overOrUnder != "over" && overOrUnder != "under" {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("either over or under"))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpPlay))
