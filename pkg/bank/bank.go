@@ -38,11 +38,10 @@ func LoadBankDB() (*BankDB, error) {
 }
 
 func (bdb *BankDB) AddUser(userID string) error {
-	result := bdb.db.Create(&bank{
+	result := bdb.db.FirstOrCreate(&bank{
 		UserID: userID,
 		Funds:  1000,
 	})
-
 	if result.Error != nil {
 		return result.Error
 	}

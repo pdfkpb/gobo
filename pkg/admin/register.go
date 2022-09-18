@@ -44,7 +44,15 @@ func RegisterUser(params []string, s *discordgo.Session, m *discordgo.MessageCre
 
 	err = bankDB.AddUser(registerID)
 	if err != nil {
-		fmt.Println("Oh Shit Me Boyo")
+		fmt.Printf("failed to AddUser: %v\n", err)
+		switch err {
+		case bank.ErrorUserAlreadyRegistered:
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s is already Registered", registerID))
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Check your balance with: %s", HelpCheck))
+		default:
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
+		}
+		return
 	}
 
 	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> has 1000 monies", registerID))
