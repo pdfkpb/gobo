@@ -1,4 +1,4 @@
-package dice
+package blackjack
 
 import (
 	"crypto/rand"
@@ -8,23 +8,15 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/bank"
+	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-var (
-	session   *discordgo.Session
-	msgCreate *discordgo.MessageCreate
-)
-
-const HelpPlay = "!dice <amount> over | under"
+const HelpPlay = "!bj <buy in amount>"
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
-	session = s
-	msgCreate = m
-
-	bankDB, err := bank.LoadBankDB()
+	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
-		fmt.Printf("failed to load bankDB: %v\n", err)
+		fmt.Printf("failed to load patronDB: %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
@@ -49,7 +41,7 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	userID := m.Author.ID
-	funds, err := bankDB.CheckFunds(userID)
+	funds, err := patronDB.CheckFunds(userID)
 	if err != nil {
 		fmt.Printf("dice failed to get user funds %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
@@ -73,13 +65,13 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if overOrUnder == "over" && n > 7 || overOrUnder == "under" && n < 7 {
-		currentFunds, err := bankDB.AddFunds(userID, amt)
+		currentFunds, err := patronDB.AddFunds(userID, amt)
 		if err != nil {
 
 		}
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d you win! You now have %d", userID, n, currentFunds))
 	} else {
-		currentFunds, err := bankDB.TakeFunds(userID, amt)
+		currentFunds, err := patronDB.TakeFunds(userID, amt)
 		if err != nil {
 
 		}

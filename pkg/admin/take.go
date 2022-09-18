@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/bank"
+	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
 const (
@@ -46,17 +46,17 @@ func Take(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	bankDB, err := bank.LoadBankDB()
+	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
-		fmt.Printf("failed to load BankDB: %v\n", err)
+		fmt.Printf("failed to load patronDB: %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
-	currentFunds, err := bankDB.TakeFunds(takeFrom.ID, amount)
+	currentFunds, err := patronDB.TakeFunds(takeFrom.ID, amount)
 	if err != nil {
 		switch err {
-		case bank.ErrInvalidAmount:
+		case patron.ErrInvalidAmount:
 			s.ChannelMessageSend(m.ChannelID, err.Error())
 		default:
 			fmt.Printf("failed to add funds: %v\n", err)

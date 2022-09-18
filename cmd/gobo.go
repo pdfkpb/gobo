@@ -11,7 +11,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
-	"github.com/pdfkpb/gobo/pkg/dice"
+	"github.com/pdfkpb/gobo/pkg/games/dice"
 )
 
 const (
