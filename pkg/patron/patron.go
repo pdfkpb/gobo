@@ -115,9 +115,10 @@ func (pdb *PatronDB) TakeFunds(userID string, amount int) (int, error) {
 }
 
 // Lottery Functions
+
 func (pdb *PatronDB) SetLotteryRoll(userID string, roll int) error {
 	var patron Patron
-	result := pdb.db.First(&patron, "user_id = ?", userID)
+	result := pdb.db.Where("lottery_roll = ?", 0).First(&patron, "user_id = ?", userID)
 	if result.Error != nil {
 		return ErrUserNotRegistered
 	}
@@ -130,14 +131,19 @@ func (pdb *PatronDB) SetLotteryRoll(userID string, roll int) error {
 	return nil
 }
 
-func (pdb *PatronDB) GetLotteryWinner() (string, int, error) {
-	var patron Patron
-	result := pdb.db.Order("lottery_roll desc").First(&patron)
+func (pdb *PatronDB) GetLotteryWinner() ([]string, int, error) {
+	var patrons []Patron
+	result := pdb.db.Order("lottery_roll desc").Where("lottery_roll > ?", 0).First(&patrons)
 	if result.Error != nil {
-		return "", 0, ErrUnhandledError
+		return []string{}, 0, ErrUnhandledError
 	}
 
-	return patron.UserID, patron.LotteryRoll, nil
+	var winners []string
+	for _, patron := range patrons {
+		winners = append(winners, patron.UserID)
+	}
+
+	return winners, patrons[0].LotteryRoll, nil
 }
 
 func (pdb *PatronDB) ClearLottery() error {
