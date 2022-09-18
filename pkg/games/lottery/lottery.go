@@ -50,9 +50,9 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	switch len(currentWinners) {
 	case 1:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, Current Winner is <@%s> with a %d", userID, roll, currentWinners[0], currWinnerRoll))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, Current Winner is <@%s> with a %d", userID, realRoll, currentWinners[0], currWinnerRoll))
 	default:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, <@%s> all winning with a %d", userID, roll, strings.Join(currentWinners, "><@"), currWinnerRoll))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, <@%s> all winning with a %d", userID, realRoll, strings.Join(currentWinners, "><@"), currWinnerRoll))
 	}
 }
 
@@ -72,7 +72,11 @@ func ItsLotteryTime(s *discordgo.Session) {
 	}
 
 	var winnerFunds int
-	share := 720 / len(winners)
+	var share int
+	if len(winners) > 0 {
+		share = 720 / len(winners)
+	}
+
 	for _, winner := range winners {
 		winnerFunds, err = patronDB.AddFunds(winner, share)
 		if err != nil {
