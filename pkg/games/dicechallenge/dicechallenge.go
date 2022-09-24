@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	HelpPlay = fmt.Sprintf("Dice Challenge:\n\tChallenge: %s\n\tAccept%s", helpChallenge, helpAccept)
+	HelpPlay = fmt.Sprintf("Dice Challenge:\n\tChallenge: %s\n\tAccept: %s", helpChallenge, helpAccept)
 )
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
