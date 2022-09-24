@@ -10,6 +10,7 @@ import (
 var (
 	ErrUserNotRegistered       = errors.New("user not found")
 	ErrChallengeNotFound       = errors.New("patron has not outstanding challenges")
+	ErrChallengeAlreadyPosed   = errors.New("patron has outstanding challenge")
 	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
 	ErrFundsCannotBeNeg        = errors.New("Funds cannot be negative")
@@ -187,7 +188,11 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 	}
 
 	if patron.Funds-amount < 0 {
-		return errors.New("Funds cannot be negative")
+		return ErrFundsCannotBeNeg
+	}
+
+	if patron.Challenge.Contender != "" {
+		return ErrChallengeAlreadyPosed
 	}
 
 	patron.Funds -= amount
