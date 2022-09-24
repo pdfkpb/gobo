@@ -59,5 +59,5 @@ func challenge(patronDB *patron.PatronDB, params []string, s *discordgo.Session,
 		return
 	}
 
-	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Thank you for you challenge, we charge a %f house cut you may cancel with `!dc cancel`", games.HouseCut*100))
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Thank you for you challenge, we charge a %.1f%% house cut you may cancel with `!dc cancel`", games.HouseCut*100))
 }

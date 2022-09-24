@@ -12,6 +12,7 @@ var (
 	ErrChallengeNotFound       = errors.New("patron has not outstanding challenges")
 	ErrChallengeAlreadyPosed   = errors.New("patron has outstanding challenge")
 	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
+	ErrFailedToMigrateDB       = errors.New("failed to migrate db table")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
 	ErrFundsCannotBeNeg        = errors.New("Funds cannot be negative")
 	ErrAlreadyLotteryRolled    = errors.New("this user already rolled for the lottery")
@@ -38,12 +39,12 @@ func LoadPatronDB() (*PatronDB, error) {
 
 	err = db.AutoMigrate(&Patron{})
 	if err != nil {
-
+		return nil, ErrFailedToMigrateDB
 	}
 
 	err = db.AutoMigrate(&Challenge{})
 	if err != nil {
-
+		return nil, ErrFailedToMigrateDB
 	}
 
 	return &PatronDB{
