@@ -6,12 +6,13 @@ import (
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/bank"
+	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
 var HelpGive = "!give @SomeUser <some_amount>"
 
 func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+	fmt.Println("WWWOOOO: ", m.Author.ID)
 	if !ChatPox.IsAdmin(m.Author.ID) {
 		fmt.Printf("user %s tried to give funds: %v\n", m.Author.Username, ErrNotAdmin)
 		s.ChannelMessageSend(m.ChannelID, "Hey, knock it off")
@@ -44,17 +45,17 @@ func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	bankDB, err := bank.LoadBankDB()
+	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
-		fmt.Printf("failed to load BankDB: %v\n", err)
+		fmt.Printf("failed to load patronDB: %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
-	currentFunds, err := bankDB.AddFunds(giveTo.ID, amount)
+	currentFunds, err := patronDB.AddFunds(giveTo.ID, amount)
 	if err != nil {
 		switch err {
-		case bank.ErrInvalidAmount:
+		case patron.ErrInvalidAmount:
 			s.ChannelMessageSend(m.ChannelID, err.Error())
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpGive))
 		default:

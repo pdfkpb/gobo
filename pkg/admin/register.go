@@ -5,15 +5,15 @@ import (
 	"regexp"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/bank"
+	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
 const HelpRegister = "!register [@SomeUser]"
 
 func RegisterUser(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
-	bankDB, err := bank.LoadBankDB()
+	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
-		fmt.Printf("failed to load BankDB: %v\n", err)
+		fmt.Printf("failed to load patronDB: %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
@@ -42,11 +42,11 @@ func RegisterUser(params []string, s *discordgo.Session, m *discordgo.MessageCre
 		registerID = newUser.ID
 	}
 
-	err = bankDB.AddUser(registerID)
+	err = patronDB.AddUser(registerID)
 	if err != nil {
 		fmt.Printf("failed to AddUser: %v\n", err)
 		switch err {
-		case bank.ErrorUserAlreadyRegistered:
+		case patron.ErrorUserAlreadyRegistered:
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> is already Registered", registerID))
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Check your balance with: %s", HelpCheck))
 		default:
