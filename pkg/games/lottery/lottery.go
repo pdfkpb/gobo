@@ -14,7 +14,7 @@ import (
 // Ensure we match the games.Play function definition
 var _ games.Play = Play
 
-const HelpPlay = "!roll"
+const HelpPlay = "Lottery:\n\t!roll"
 const payout = 720
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {

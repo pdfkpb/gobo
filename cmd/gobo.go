@@ -90,10 +90,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case "roll":
 		lottery.Play(params, s, m)
 	case "help":
-		gamesHelp := fmt.Sprintf("Games: \n```%s\n%s\n%s```", dice.HelpPlay, lottery.HelpPlay, dicechallenge.HelpPlay)
+		gamesHelp := fmt.Sprintf("Games:\n```%s\n%s\n%s```", dice.HelpPlay, lottery.HelpPlay, dicechallenge.HelpPlay)
 		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
-		adminHelp := fmt.Sprintf("Admin: \n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
+		adminHelp := fmt.Sprintf("Admin: params in brackets require admin priveleges\n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
 		s.ChannelMessageSend(m.ChannelID, adminHelp)
 	default:
 		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")

@@ -15,7 +15,7 @@ import (
 // Ensure we match the games.Play function definition
 var _ games.Play = Play
 
-const HelpPlay = "!dice <amount> over | under"
+const HelpPlay = "O'er Under:\n\t!dice <amount> over | under"
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
