@@ -9,8 +9,10 @@ import (
 
 var (
 	ErrUserNotRegistered       = errors.New("user not found")
+	ErrChallengeNotFound       = errors.New("patron has not outstanding challenges")
 	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
+	ErrFundsCannotBeNeg        = errors.New("Funds cannot be negative")
 	ErrAlreadyLotteryRolled    = errors.New("this user already rolled for the lottery")
 	ErrUnhandledError          = errors.New("didn't bother to catch it")
 )
@@ -24,6 +26,7 @@ type Patron struct {
 	UserID      string `gorm:"primaryKey"`
 	Funds       int
 	LotteryRoll int
+	Challenge   *Challenge
 }
 
 func LoadPatronDB() (*PatronDB, error) {
@@ -104,7 +107,7 @@ func (pdb *PatronDB) TakeFunds(userID string, amount int) (int, error) {
 	}
 
 	if patron.Funds-amount < 0 {
-		return 0, errors.New("Funds cannot be negative")
+		return 0, ErrFundsCannotBeNeg
 	}
 
 	result = pdb.db.Model(&patron).Update("funds", patron.Funds-amount)
@@ -156,6 +159,85 @@ func (pdb *PatronDB) ClearLottery() error {
 	result := pdb.db.Model(&Patron{}).Where("1 = 1").Update("lottery_roll", 0)
 	if result.Error != nil {
 		return ErrUnhandledError
+	}
+
+	return nil
+}
+
+// Challenge Functions
+
+func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int) error {
+	if amount < 0 {
+		return ErrInvalidAmount
+	}
+
+	var patron Patron
+	result := pdb.db.First(&patron, "user_id = ?", userID)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if patron.Funds-amount < 0 {
+		return errors.New("Funds cannot be negative")
+	}
+
+	patron.Funds -= amount
+	patron.Challenge = &Challenge{
+		Contender: contender,
+		Escrow:    amount,
+	}
+
+	result = pdb.db.Model(&Patron{}).Updates(patron)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (pdb *PatronDB) GetChallenge(userID string) (int, error) {
+	var patron Patron
+	result := pdb.db.First(&patron, "user_id = ?", userID)
+
+	if result.Error != nil {
+		switch result.Error {
+		case gorm.ErrRecordNotFound:
+			return 0, ErrChallengeNotFound
+		default:
+			return 0, ErrUnhandledError
+		}
+	}
+
+	if patron.Challenge == nil {
+		return 0, ErrChallengeNotFound
+	}
+
+	return patron.Challenge.Escrow, nil
+}
+
+func (pdb *PatronDB) ClearChallenge(userID string) error {
+	var patron Patron
+	result := pdb.db.First(&patron, "user_id = ?", userID)
+
+	if result.Error != nil {
+		switch result.Error {
+		case gorm.ErrRecordNotFound:
+			return ErrChallengeNotFound
+		default:
+			return ErrUnhandledError
+		}
+	}
+
+	if patron.Challenge == nil {
+		return ErrChallengeNotFound
+	}
+
+	patron.Challenge = nil
+
+	result = pdb.db.Model(&Patron{}).Updates(patron)
+	if result.Error != nil {
+		return result.Error
 	}
 
 	return nil
