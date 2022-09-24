@@ -12,6 +12,7 @@ var (
 	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
 	ErrAlreadyLotteryRolled    = errors.New("this user already rolled for the lottery")
+	ErrNoRoll                  = errors.New("no one rolled this time around")
 	ErrUnhandledError          = errors.New("didn't bother to catch it")
 )
 
@@ -132,13 +133,24 @@ func (pdb *PatronDB) SetLotteryRoll(userID string, roll int) error {
 	return nil
 }
 
-func (pdb *PatronDB) GetLotteryWinner() ([]string, int, error) {
-	var patrons []Patron
-	result := pdb.db.Order("lottery_roll desc").Where("lottery_roll > ?", 0).First(&patrons)
+func (pdb *PatronDB) GetLotteryWinners() ([]string, int, error) {
+	highestRoll := struct{ LotteryRoll int }{}
+	result := pdb.db.Model(&Patron{}).Order("lottery_roll desc").Where("lottery_roll > ?", 0).First(&highestRoll)
 	if result.Error != nil {
 		switch result.Error {
 		case gorm.ErrRecordNotFound:
-			return []string{}, 0, nil
+			return []string{}, 0, ErrNoRoll
+		default:
+			return []string{}, 0, ErrUnhandledError
+		}
+	}
+
+	var patrons []Patron
+	result = pdb.db.Where("lottery_roll = ?", highestRoll.LotteryRoll).Find(&patrons)
+	if result.Error != nil {
+		switch result.Error {
+		case gorm.ErrRecordNotFound:
+			return []string{}, 0, ErrNoRoll
 		default:
 			return []string{}, 0, ErrUnhandledError
 		}
@@ -149,7 +161,7 @@ func (pdb *PatronDB) GetLotteryWinner() ([]string, int, error) {
 		winners = append(winners, patron.UserID)
 	}
 
-	return winners, patrons[0].LotteryRoll, nil
+	return winners, highestRoll.LotteryRoll, nil
 }
 
 func (pdb *PatronDB) ClearLottery() error {
