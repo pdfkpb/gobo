@@ -59,8 +59,6 @@ func main() {
 	}
 }
 
-var bank = map[string]int{}
-
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
@@ -88,16 +86,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		dice.Play(params, s, m)
 	case "roll":
 		lottery.Play(params, s, m)
-	default:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Games: "))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", dice.HelpPlay))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", lottery.HelpPlay))
+	case "help":
+		gamesHelp := fmt.Sprintf("Games: \n```%s\n%s```", dice.HelpPlay, lottery.HelpPlay)
+		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Admin: "))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpGive))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpTake))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpCheck))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpRegister))
+		adminHelp := fmt.Sprintf("Admin: \n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
+		s.ChannelMessageSend(m.ChannelID, adminHelp)
+	default:
+		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")
 	}
 }
 
