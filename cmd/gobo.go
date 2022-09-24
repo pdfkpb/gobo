@@ -74,6 +74,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	switch cmd {
+	case "wallaby":
+		s.ChannelMessageSend(m.ChannelID, "Hello\nWorld")
 	case "give":
 		admin.Give(params, s, m)
 	case "take":
@@ -86,14 +88,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		dice.Play(params, s, m)
 	case "roll":
 		lottery.Play(params, s, m)
-	default:
-		gamesHelp := fmt.Sprintf(
-			"Games: \n```%s```\n```%s```",
-			dice.HelpPlay, lottery.HelpPlay)
+	case "help":
+		gamesHelp := fmt.Sprintf("Games: \n```%s\n%s```", dice.HelpPlay, lottery.HelpPlay)
 		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
-		adminHelp := fmt.Sprintf("Admin: \n```%s```\n```%s```\n```%s```\n```%s```", admin.HelpGive, admin.HelpTake, admin.HelpCheck, admin.HelpRegister)
+		adminHelp := fmt.Sprintf("Admin: \n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
 		s.ChannelMessageSend(m.ChannelID, adminHelp)
+	default:
+		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")
 	}
 }
 
