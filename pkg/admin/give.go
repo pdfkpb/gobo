@@ -12,6 +12,7 @@ import (
 var HelpGive = "!give @SomeUser <some_amount>"
 
 func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+	fmt.Println("WWWOOOO: ", m.Author.ID)
 	if !ChatPox.IsAdmin(m.Author.ID) {
 		fmt.Printf("user %s tried to give funds: %v\n", m.Author.Username, ErrNotAdmin)
 		s.ChannelMessageSend(m.ChannelID, "Hey, knock it off")

@@ -57,17 +57,19 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func ItsLotteryTime(s *discordgo.Session) {
+	const channelID = "513950048057425934"
+
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load PatronDB: %v\n", err)
-		s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		s.ChannelMessageSend(channelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
 	winners, roll, err := patronDB.GetLotteryWinner()
 	if err != nil {
 		fmt.Printf("failed to GetLotteryWinner: %v\n", err)
-		s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		s.ChannelMessageSend(channelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
@@ -81,7 +83,7 @@ func ItsLotteryTime(s *discordgo.Session) {
 		winnerFunds, err = patronDB.AddFunds(winner, share)
 		if err != nil {
 			fmt.Printf("failed to AddFunds: %v\n", err)
-			s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+			s.ChannelMessageSend(channelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 			return
 		}
 	}
@@ -89,16 +91,16 @@ func ItsLotteryTime(s *discordgo.Session) {
 	err = patronDB.ClearLottery()
 	if err != nil {
 		fmt.Printf("failed to ClearLottery: %v\n", err)
-		s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		s.ChannelMessageSend(channelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
 	switch len(winners) {
 	case 0:
-		s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("No one rolled, no one wins ¯\\_(ツ)_/¯"))
+		break
 	case 1:
-		s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("<@%s> rolled a %d you win! You now have %d", winners[0], roll, winnerFunds))
+		s.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> rolled a %d you win! You now have %d", winners[0], roll, winnerFunds))
 	default:
-		s.ChannelMessageSend("1020895617947537441", fmt.Sprintf("<@%s> all won with a %d you win! You each get %d", strings.Join(winners, "><@"), roll, share))
+		s.ChannelMessageSend(channelID, fmt.Sprintf("<@%s> all won with a %d you win! You each get %d", strings.Join(winners, "><@"), roll, share))
 	}
 }

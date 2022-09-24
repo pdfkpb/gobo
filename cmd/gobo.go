@@ -50,7 +50,7 @@ func main() {
 
 	defer dg.Close()
 
-	lotteryTicker := time.NewTicker(1 * time.Minute)
+	lotteryTicker := time.NewTicker(1 * time.Hour)
 	for {
 		select {
 		case <-lotteryTicker.C:
