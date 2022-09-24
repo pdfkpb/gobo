@@ -26,7 +26,7 @@ type Patron struct {
 	UserID      string `gorm:"primaryKey"`
 	Funds       int
 	LotteryRoll int
-	Challenge   Challenge
+	Challenge   Challenge `gorm:"foreignKey:ID"`
 }
 
 func LoadPatronDB() (*PatronDB, error) {
