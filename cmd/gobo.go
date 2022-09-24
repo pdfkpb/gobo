@@ -10,7 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
 	"github.com/pdfkpb/gobo/pkg/games/dice"
-	"github.com/pdfkpb/gobo/pkg/games/diceoff"
+	"github.com/pdfkpb/gobo/pkg/games/dicechallenge"
 	"github.com/pdfkpb/gobo/pkg/games/lottery"
 )
 
@@ -85,12 +85,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		admin.RegisterUser(params, s, m)
 	case "dice":
 		dice.Play(params, s, m)
-	case "challenge":
-		diceoff.Play(params, s, m)
+	case "dc":
+		dicechallenge.Play(params, s, m)
 	case "roll":
 		lottery.Play(params, s, m)
 	case "help":
-		gamesHelp := fmt.Sprintf("Games: \n```%s\n%s```", dice.HelpPlay, lottery.HelpPlay)
+		gamesHelp := fmt.Sprintf("Games: \n```%s\n%s\n%s```", dice.HelpPlay, lottery.HelpPlay, dicechallenge.HelpPlay)
 		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
 		adminHelp := fmt.Sprintf("Admin: \n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)

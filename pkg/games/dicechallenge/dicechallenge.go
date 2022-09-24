@@ -1,4 +1,4 @@
-package diceoff
+package dicechallenge
 
 import (
 	"crypto/rand"
@@ -12,11 +12,16 @@ import (
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-// Ensure we match the games.Play function definition
 var _ games.Play = Play
 
-const HelpPlay = "!challenge @SomePlayer <amount>"
-const HelpAccept = "!challenge"
+const (
+	helpChallenge = "!dc @SomePlayer <amount>"
+	helpAccept    = "!dc @SomePlayer"
+)
+
+var (
+	HelpPlay = fmt.Sprintf("Dice Challenge:\n\tChallenge: %s\n\tAccept%s", helpChallenge, helpAccept)
+)
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
