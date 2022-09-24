@@ -74,8 +74,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	switch cmd {
-	case "wallaby":
-		s.ChannelMessageSend(m.ChannelID, "Hello\nWorld")
 	case "give":
 		admin.Give(params, s, m)
 	case "take":
