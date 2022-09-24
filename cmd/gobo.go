@@ -87,15 +87,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case "roll":
 		lottery.Play(params, s, m)
 	default:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Games: "))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", dice.HelpPlay))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", lottery.HelpPlay))
+		gamesHelp := fmt.Sprintf(
+			"Games: \n```%s```\n```%s```",
+			dice.HelpPlay, lottery.HelpPlay)
+		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Admin: "))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpGive))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpTake))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpCheck))
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("```%s```", admin.HelpRegister))
+		adminHelp := fmt.Sprintf("Admin: \n```%s```\n```%s```\n```%s```\n```%s```", admin.HelpGive, admin.HelpTake, admin.HelpCheck, admin.HelpRegister)
+		s.ChannelMessageSend(m.ChannelID, adminHelp)
 	}
 }
 
