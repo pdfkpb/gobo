@@ -36,6 +36,7 @@ func LoadPatronDB() (*PatronDB, error) {
 	}
 
 	db.AutoMigrate(&Patron{})
+	db.AutoMigrate(&Challenge{})
 
 	return &PatronDB{
 		db: db,
