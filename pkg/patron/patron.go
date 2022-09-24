@@ -35,8 +35,15 @@ func LoadPatronDB() (*PatronDB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&Patron{})
-	db.AutoMigrate(&Challenge{})
+	err = db.AutoMigrate(&Patron{})
+	if err != nil {
+
+	}
+
+	err = db.AutoMigrate(&Challenge{})
+	if err != nil {
+
+	}
 
 	return &PatronDB{
 		db: db,
