@@ -1,4 +1,4 @@
-package dice
+package diceoff
 
 import (
 	"crypto/rand"
@@ -15,7 +15,8 @@ import (
 // Ensure we match the games.Play function definition
 var _ games.Play = Play
 
-const HelpPlay = "!dice <amount> over | under"
+const HelpPlay = "!challenge @SomePlayer <amount>"
+const HelpAccept = "!challenge"
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()

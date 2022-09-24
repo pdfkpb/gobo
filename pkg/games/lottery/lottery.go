@@ -7,8 +7,12 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/games"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
+
+// Ensure we match the games.Play function definition
+var _ games.Play = Play
 
 const HelpPlay = "!roll"
 const payout = 720

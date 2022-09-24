@@ -10,6 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
 	"github.com/pdfkpb/gobo/pkg/games/dice"
+	"github.com/pdfkpb/gobo/pkg/games/diceoff"
 	"github.com/pdfkpb/gobo/pkg/games/lottery"
 )
 
@@ -84,6 +85,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		admin.RegisterUser(params, s, m)
 	case "dice":
 		dice.Play(params, s, m)
+	case "challenge":
+		diceoff.Play(params, s, m)
 	case "roll":
 		lottery.Play(params, s, m)
 	case "help":
@@ -98,8 +101,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func commandParse(cmd string) (string, []string, error) {
-	fmt.Println(cmd)
-
 	if !strings.HasPrefix(cmd, "!") && !strings.HasPrefix(cmd, "\\!") {
 		return "", []string{}, errors.New(errNotMe)
 	}
