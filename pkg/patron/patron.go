@@ -28,7 +28,7 @@ type Patron struct {
 	UserID      string `gorm:"primaryKey"`
 	Funds       int
 	LotteryRoll int
-	Challenge   Challenge
+	Challenge   Challenge `gorm:"embedded"`
 }
 
 func LoadPatronDB() (*PatronDB, error) {
@@ -202,7 +202,7 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		Escrow:    amount,
 	}
 
-	result = pdb.db.Save(&patron)
+	result = pdb.db.Model(&patron).Where("1=1").Updates(&patron)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -249,7 +249,7 @@ func (pdb *PatronDB) ClearChallenge(userID string) error {
 
 	patron.Challenge = Challenge{}
 
-	result = pdb.db.Save(&patron)
+	result = pdb.db.Model(&patron).Where("1=1").Updates(&patron)
 	if result.Error != nil {
 		return result.Error
 	}
