@@ -2,9 +2,14 @@ package patron
 
 import (
 	"errors"
+	"os"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+)
+
+const (
+	envGoboDBFile = "GOBO_DATABASE_FILE"
 )
 
 var (
@@ -12,6 +17,7 @@ var (
 	ErrChallengeNotFound       = errors.New("patron has not outstanding challenges")
 	ErrChallengeAlreadyPosed   = errors.New("patron has outstanding challenge")
 	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
+	ErrEnvVariableNotSet       = errors.New("environment variable %s not set")
 	ErrFailedToMigrateDB       = errors.New("failed to migrate db table")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
 	ErrFundsCannotBeNeg        = errors.New("Funds cannot be negative")
@@ -32,7 +38,12 @@ type Patron struct {
 }
 
 func LoadPatronDB() (*PatronDB, error) {
-	db, err := gorm.Open(sqlite.Open("patron.db"), &gorm.Config{})
+	dbFile := os.Getenv(envGoboDBFile)
+	if dbFile == "" {
+		return nil, ErrEnvVariableNotSet
+	}
+
+	db, err := gorm.Open(sqlite.Open(dbFile), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
