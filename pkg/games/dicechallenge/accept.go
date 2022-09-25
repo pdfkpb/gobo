@@ -33,7 +33,7 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 		case patron.ErrChallengeNotFound:
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf(":/ They didn't challenge you"))
 		default:
-			fmt.Printf("dicechallenge failed to CreateChallenge %v\n", err)
+			fmt.Printf("dicechallenge:accept failed to CreateChallenge %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 		}
 		return
@@ -47,7 +47,7 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Insufficent funds, <@%s> only has %d monies", challengerID, funds))
 			return
 		default:
-			fmt.Printf("dicechallenge failed to TakeFunds %v\n", err)
+			fmt.Printf("dicechallenge:accept failed to TakeFunds %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 			return
 		}
@@ -64,19 +64,19 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 	if challengerRoll == contenderRoll {
 		_, err = patronDB.AddFunds(challengerID, games.TakeHouseCut(challengeAmount))
 		if err != nil {
-			fmt.Printf("dicechallenge failed to AddFunds %v\n", err)
+			fmt.Printf("dicechallenge:accept failed to AddFunds %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 			return
 		}
 		_, err = patronDB.AddFunds(contenderID, games.TakeHouseCut(challengeAmount))
 		if err != nil {
-			fmt.Printf("dicechallenge failed to AddFunds %v\n", err)
+			fmt.Printf("dicechallenge:accept failed to AddFunds %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 			return
 		}
 		err = patronDB.ClearChallenge(challengerID)
 		if err != nil {
-			fmt.Printf("dicechallenge failed to ClearChallenge %v\n", err)
+			fmt.Printf("dicechallenge:accept failed to ClearChallenge %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 			return
 		}
@@ -93,7 +93,7 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 
 	_, err = patronDB.AddFunds(giveFunds, games.TakeHouseCut(challengeAmount*2))
 	if err != nil {
-		fmt.Printf("dicechallenge failed to AddFunds %v\n", err)
+		fmt.Printf("dicechallenge:accept failed to AddFunds %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}

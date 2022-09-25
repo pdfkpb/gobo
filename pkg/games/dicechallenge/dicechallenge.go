@@ -13,6 +13,7 @@ var _ games.Play = Play
 const (
 	helpChallenge = "!dc @SomePlayer <amount>"
 	helpAccept    = "!dc @SomePlayer"
+	helpCancel    = "!dc cancel"
 )
 
 var (
@@ -31,7 +32,11 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	case 1:
 		accept(patronDB, params, s, m)
 	case 2:
-		challenge(patronDB, params, s, m)
+		if params[1] == "cancel" {
+			cancel(patronDB, params, s, m)
+		} else {
+			challenge(patronDB, params, s, m)
+		}
 	default:
 		s.ChannelMessageSend(m.ChannelID, "Invalid number of params")
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage:\n```%s```", HelpPlay))

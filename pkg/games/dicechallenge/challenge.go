@@ -42,7 +42,7 @@ func challenge(patronDB *patron.PatronDB, params []string, s *discordgo.Session,
 	challengerID := m.Author.ID
 	funds, err := patronDB.CheckFunds(challengerID)
 	if err != nil {
-		fmt.Printf("dicechallenge failed to get user funds %v\n", err)
+		fmt.Printf("dicechallenge:challenge failed to get user funds %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
@@ -54,10 +54,15 @@ func challenge(patronDB *patron.PatronDB, params []string, s *discordgo.Session,
 
 	err = patronDB.CreateChallenge(challengerID, contenderID, amount)
 	if err != nil {
-		fmt.Printf("dicechallenge failed to CreateChallenge %v\n", err)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
+		switch err {
+		case patron.ErrChallengeAlreadyPosed:
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("You have an outstanding challenge, you can remove it by `!cancel`"))
+		default:
+			fmt.Printf("dicechallenge:challenge failed to CreateChallenge %v\n", err)
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
+		}
 		return
 	}
 
-	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Thank you for you challenge, we charge a %.1f%% house cut you may cancel with `!dc cancel`", games.HouseCut*100))
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Thank you for you challenge, we charge a %.1f%% house cut you may cancel with `%s`", games.HouseCut*100, helpCancel))
 }
