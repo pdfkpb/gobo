@@ -202,13 +202,15 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		return ErrChallengeAlreadyPosed
 	}
 
-	patron.Funds -= amount
-	patron.Challenge = &Challenge{
-		Contender: contender,
-		Escrow:    amount,
+	result = pdb.db.Model(&patron).Where("1=1").Update("funds", patron.Funds-amount)
+	if result.Error != nil {
+		return result.Error
 	}
 
-	result = pdb.db.Model(&patron).Where("1=1").Updates(&patron)
+	result = pdb.db.Model(&patron).Association("Challenge").DB.Create(&Challenge{
+		Contender: contender,
+		Escrow:    amount,
+	})
 	if result.Error != nil {
 		return result.Error
 	}
