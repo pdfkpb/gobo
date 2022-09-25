@@ -202,15 +202,13 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		return ErrChallengeAlreadyPosed
 	}
 
-	result = pdb.db.Model(&patron).Where("1=1").Update("funds", patron.Funds-amount)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	result = pdb.db.Model(&patron).Association("Challenge").DB.Create(&Challenge{
+	patron.Funds -= amount
+	patron.Challenge = Challenge{
 		Contender: contender,
 		Escrow:    amount,
-	})
+	}
+
+	result = pdb.db.Save(&patron)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -255,9 +253,11 @@ func (pdb *PatronDB) ClearChallenge(userID string) error {
 		return ErrChallengeNotFound
 	}
 
-	err := pdb.db.Model(&patron).Association("Challenge").Delete(&patron.Challenge)
-	if err != nil {
-		return err
+	patron.Challenge = Challenge{}
+
+	result = pdb.db.Save(&patron)
+	if result.Error != nil {
+		return result.Error
 	}
 
 	return nil
