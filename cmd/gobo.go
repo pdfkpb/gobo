@@ -84,7 +84,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case "register":
 		admin.RegisterUser(params, s, m)
 	case "br":
-		admin.RegisterUser(params, s, m)
+		admin.BulkRegister(params, s, m)
 	case "dice":
 		dice.Play(params, s, m)
 	case "dc":
