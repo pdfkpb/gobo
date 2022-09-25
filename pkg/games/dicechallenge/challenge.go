@@ -56,7 +56,7 @@ func challenge(patronDB *patron.PatronDB, params []string, s *discordgo.Session,
 	if err != nil {
 		switch err {
 		case patron.ErrChallengeAlreadyPosed:
-			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("You have an outstanding challenge, you can remove it by `!cancel`"))
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("You have an outstanding challenge, you can remove it by `%s`", helpCancel))
 		default:
 			fmt.Printf("dicechallenge:challenge failed to CreateChallenge %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
