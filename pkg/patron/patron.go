@@ -63,10 +63,10 @@ func LoadPatronDB() (*PatronDB, error) {
 	}, nil
 }
 
-func (pdb *PatronDB) AddUser(userID string) error {
+func (pdb *PatronDB) AddUser(userID string, funds int) error {
 	result := pdb.db.FirstOrCreate(&Patron{
 		UserID: userID,
-		Funds:  1000,
+		Funds:  funds,
 	})
 	if result.Error != nil {
 		return result.Error

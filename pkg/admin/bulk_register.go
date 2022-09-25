@@ -27,7 +27,7 @@ func BulkRegister(params []string, s *discordgo.Session, m *discordgo.MessageCre
 	}
 
 	for _, member := range channel.Members {
-		err = patronDB.AddUser(member.ID)
+		err = patronDB.AddUser(member.ID, 5000)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Failed to Register <@%s>: %s", member.ID, err.Error()))
 		}
