@@ -202,7 +202,7 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		Escrow:    amount,
 	}
 
-	result = pdb.db.Model(&Patron{}).Where("1 = 1").Updates(patron)
+	result = pdb.db.Model(&Patron{}).Where("1 = 1").Updates(&patron)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -249,7 +249,7 @@ func (pdb *PatronDB) ClearChallenge(userID string) error {
 
 	patron.Challenge = Challenge{}
 
-	result = pdb.db.Model(&Patron{}).Where("1 = 1").Updates(patron)
+	result = pdb.db.Model(&Patron{}).Where("1 = 1").Updates(&patron)
 	if result.Error != nil {
 		return result.Error
 	}
