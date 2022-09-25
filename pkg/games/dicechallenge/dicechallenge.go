@@ -2,7 +2,6 @@ package dicechallenge
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/games"
@@ -31,13 +30,13 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	switch len(params) {
 	case 1:
-		accept(patronDB, params, s, m)
-	case 2:
-		if strings.Compare(params[0], "cancel") == 0 {
+		if params[0] == "cancel" {
 			cancel(patronDB, params, s, m)
 		} else {
-			challenge(patronDB, params, s, m)
+			accept(patronDB, params, s, m)
 		}
+	case 2:
+		challenge(patronDB, params, s, m)
 	default:
 		s.ChannelMessageSend(m.ChannelID, "Invalid number of params")
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage:\n```%s```", HelpPlay))
