@@ -207,10 +207,12 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		return result.Error
 	}
 
-	result = pdb.db.Model(&patron).Association("Challenge").DB.Create(&Challenge{
+	challenge := Challenge{
 		Contender: contender,
 		Escrow:    amount,
-	})
+	}
+
+	result = pdb.db.Model(&patron).Association("Challenge").DB.Create(&challenge)
 	if result.Error != nil {
 		return result.Error
 	}
