@@ -34,7 +34,7 @@ type Patron struct {
 	UserID      string `gorm:"primaryKey"`
 	Funds       int
 	LotteryRoll int
-	Challenge   Challenge
+	Challenge   Challenge `gorm:"foreignKey:ID"`
 }
 
 func LoadPatronDB() (*PatronDB, error) {
@@ -253,9 +253,9 @@ func (pdb *PatronDB) ClearChallenge(userID string) error {
 		return ErrChallengeNotFound
 	}
 
-	result = pdb.db.Delete(&patron.Challenge)
-	if result.Error != nil {
-		return result.Error
+	err := pdb.db.Model(&patron).Association("Challenge").Delete(&patron.Challenge)
+	if err != nil {
+		return err
 	}
 
 	return nil
