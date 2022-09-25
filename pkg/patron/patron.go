@@ -258,9 +258,7 @@ func (pdb *PatronDB) ClearChallenge(userID string) error {
 		return ErrChallengeNotFound
 	}
 
-	patron.Challenge = Challenge{}
-
-	result = pdb.db.Model(&patron).Where("1=1").Updates(&patron)
+	result = pdb.db.Delete(&patron.Challenge)
 	if result.Error != nil {
 		return result.Error
 	}
