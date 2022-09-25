@@ -34,7 +34,7 @@ type Patron struct {
 	UserID      string `gorm:"primaryKey"`
 	Funds       int
 	LotteryRoll int
-	Challenge   *Challenge `gorm:"foreignKey:ID"`
+	Challenge   Challenge `gorm:"foreignKey:ID"`
 }
 
 func LoadPatronDB() (*PatronDB, error) {
@@ -198,7 +198,7 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		return ErrFundsCannotBeNeg
 	}
 
-	if patron.Challenge != nil {
+	if patron.Challenge.Contender != "" {
 		return ErrChallengeAlreadyPosed
 	}
 
@@ -207,12 +207,10 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		return result.Error
 	}
 
-	challenge := Challenge{
+	result = pdb.db.Model(&patron).Association("Challenge").DB.Create(&Challenge{
 		Contender: contender,
 		Escrow:    amount,
-	}
-
-	result = pdb.db.Model(&patron).Association("Challenge").DB.Create(&challenge)
+	})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -233,7 +231,7 @@ func (pdb *PatronDB) GetChallenge(userID string) (int, error) {
 		}
 	}
 
-	if patron.Challenge == nil {
+	if patron.Challenge.Contender == "" {
 		return 0, ErrChallengeNotFound
 	}
 
@@ -253,7 +251,7 @@ func (pdb *PatronDB) ClearChallenge(userID string) error {
 		}
 	}
 
-	if patron.Challenge == nil {
+	if patron.Challenge.Contender == "" {
 		return ErrChallengeNotFound
 	}
 
