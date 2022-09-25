@@ -32,7 +32,7 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	case 1:
 		accept(patronDB, params, s, m)
 	case 2:
-		if params[1] == "cancel" {
+		if params[0] == "cancel" {
 			cancel(patronDB, params, s, m)
 		} else {
 			challenge(patronDB, params, s, m)
