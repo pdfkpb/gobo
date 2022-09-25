@@ -198,7 +198,7 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		return ErrFundsCannotBeNeg
 	}
 
-	if patron.Challenge.Contender != "" {
+	if patron.Challenge != nil {
 		return ErrChallengeAlreadyPosed
 	}
 
