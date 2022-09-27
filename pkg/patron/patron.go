@@ -31,10 +31,10 @@ type PatronDB struct {
 
 type Patron struct {
 	gorm.Model
-	UserID      string `gorm:"primaryKey"`
+	UserID      string `gorm:"primaryKey;unique"`
 	Funds       int
 	LotteryRoll int
-	Challenge   Challenge `gorm:"foreignKey:ID"`
+	Challenge   Challenge `gorm:"foreignKey:id"`
 }
 
 func LoadPatronDB() (*PatronDB, error) {
