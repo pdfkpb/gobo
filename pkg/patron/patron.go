@@ -20,7 +20,7 @@ var (
 	ErrEnvVariableNotSet       = errors.New("environment variable %s not set")
 	ErrFailedToMigrateDB       = errors.New("failed to migrate db table")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
-	ErrFundsCannotBeNeg        = errors.New("Funds cannot be negative")
+	ErrFundsCannotBeNeg        = errors.New("funds cannot be negative")
 	ErrAlreadyLotteryRolled    = errors.New("this user already rolled for the lottery")
 	ErrUnhandledError          = errors.New("didn't bother to catch it")
 )
@@ -34,7 +34,7 @@ type Patron struct {
 	UserID      string `gorm:"primaryKey;unique"`
 	Funds       int
 	LotteryRoll int
-	Challenge   Challenge `gorm:"foreignKey:id"`
+	Challenge   Challenge `gorm:"foreignKey:Challenger;references:UserID"`
 }
 
 func LoadPatronDB() (*PatronDB, error) {
@@ -202,15 +202,22 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 		return ErrChallengeAlreadyPosed
 	}
 
-	patron.Funds -= amount
-	patron.Challenge = Challenge{
-		Contender: contender,
-		Escrow:    amount,
-	}
-
-	result = pdb.db.Save(&patron)
+	result = pdb.db.Model(&patron).Update("funds", patron.Funds-amount)
 	if result.Error != nil {
 		return result.Error
+	}
+
+	result = pdb.db.FirstOrCreate(&Challenge{
+		Challenger: patron.UserID,
+		Contender:  contender,
+		Escrow:     amount,
+	})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrChallengeAlreadyPosed
 	}
 
 	return nil
@@ -218,7 +225,7 @@ func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int
 
 func (pdb *PatronDB) GetChallenge(userID string) (int, error) {
 	var patron Patron
-	result := pdb.db.First(&patron, "user_id = ?", userID)
+	result := pdb.db.Preload("Challenge").First(&patron, "user_id = ?", userID)
 
 	if result.Error != nil {
 		switch result.Error {
@@ -237,9 +244,7 @@ func (pdb *PatronDB) GetChallenge(userID string) (int, error) {
 }
 
 func (pdb *PatronDB) ClearChallenge(userID string) error {
-	var patron Patron
-	result := pdb.db.First(&patron, "user_id = ?", userID)
-
+	result := pdb.db.Delete(&Challenge{}, userID)
 	if result.Error != nil {
 		switch result.Error {
 		case gorm.ErrRecordNotFound:
@@ -247,17 +252,6 @@ func (pdb *PatronDB) ClearChallenge(userID string) error {
 		default:
 			return ErrUnhandledError
 		}
-	}
-
-	if patron.Challenge.Contender == "" {
-		return ErrChallengeNotFound
-	}
-
-	patron.Challenge = Challenge{}
-
-	result = pdb.db.Save(&patron)
-	if result.Error != nil {
-		return result.Error
 	}
 
 	return nil

@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type Challenge struct {
 	gorm.Model
 
-	Contender string
-	Escrow    int
+	Challenger string `gorm:"primaryKey;unique"`
+	Contender  string
+	Escrow     int
 }
