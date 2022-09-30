@@ -9,13 +9,15 @@ import (
 
 func BulkRegister(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !ChatPox.IsAdmin(m.Author.ID) {
-
+		fmt.Printf("user %s tried to register e'eryone: %v\n", m.Author.Username, ErrNotAdmin)
+		s.ChannelMessageSend(m.ChannelID, "Hey, knock it off")
+		return
 	}
 
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load patronDB: %v\n", err)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
