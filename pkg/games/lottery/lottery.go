@@ -61,7 +61,7 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func ItsLotteryTime(s *discordgo.Session) {
-	const channelID = "513950048057425934"
+	const channelID = "1023752170442608720"
 
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
