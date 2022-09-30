@@ -47,9 +47,16 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	currentWinners, currWinnerRoll, err := patronDB.GetLotteryWinner()
+	currentWinners, currWinnerRoll, err := patronDB.GetLotteryWinners()
 	if err != nil {
-
+		switch err {
+		case patron.ErrNoRoll:
+			fmt.Println(err)
+		default:
+			fmt.Printf("lottery failed to get lottery winners %v\n", err)
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
+			return
+		}
 	}
 
 	switch len(currentWinners) {
@@ -70,11 +77,16 @@ func ItsLotteryTime(s *discordgo.Session) {
 		return
 	}
 
-	winners, roll, err := patronDB.GetLotteryWinner()
+	winners, roll, err := patronDB.GetLotteryWinners()
 	if err != nil {
-		fmt.Printf("failed to GetLotteryWinner: %v\n", err)
-		s.ChannelMessageSend(channelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
-		return
+		switch err {
+		case patron.ErrNoRoll:
+			fmt.Println(err)
+		default:
+			fmt.Printf("failed to GetLotteryWinner: %v\n", err)
+			s.ChannelMessageSend(channelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+			return
+		}
 	}
 
 	var winnerFunds int
