@@ -7,10 +7,14 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/games"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-const HelpPlay = "!roll"
+// Ensure we match the games.Play function definition
+var _ games.Play = Play
+
+const HelpPlay = "Lottery:\n\t!roll"
 const payout = 720
 
 func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -64,7 +68,7 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func ItsLotteryTime(s *discordgo.Session) {
-	const channelID = "513950048057425934"
+	const channelID = "1023752170442608720"
 
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {

@@ -2,15 +2,25 @@ package patron
 
 import (
 	"errors"
+	"os"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
+const (
+	envGoboDBFile = "GOBO_DATABASE_FILE"
+)
+
 var (
 	ErrUserNotRegistered       = errors.New("user not found")
+	ErrChallengeNotFound       = errors.New("patron has not outstanding challenges")
+	ErrChallengeAlreadyPosed   = errors.New("patron has outstanding challenge")
 	ErrorUserAlreadyRegistered = errors.New("this user is already registered")
+	ErrEnvVariableNotSet       = errors.New("environment variable %s not set")
+	ErrFailedToMigrateDB       = errors.New("failed to migrate db table")
 	ErrInvalidAmount           = errors.New("invalid monies amount")
+	ErrFundsCannotBeNeg        = errors.New("funds cannot be negative")
 	ErrAlreadyLotteryRolled    = errors.New("this user already rolled for the lottery")
 	ErrNoRoll                  = errors.New("no one rolled this time around")
 	ErrUnhandledError          = errors.New("didn't bother to catch it")
@@ -22,28 +32,37 @@ type PatronDB struct {
 
 type Patron struct {
 	gorm.Model
-	UserID      string `gorm:"primaryKey"`
+	UserID      string `gorm:"primaryKey;unique"`
 	Funds       int
 	LotteryRoll int
+	Challenge   Challenge `gorm:"foreignKey:Challenger;references:UserID"`
 }
 
 func LoadPatronDB() (*PatronDB, error) {
-	db, err := gorm.Open(sqlite.Open("patron.db"), &gorm.Config{})
+	dbFile := os.Getenv(envGoboDBFile)
+	if dbFile == "" {
+		return nil, ErrEnvVariableNotSet
+	}
+
+	db, err := gorm.Open(sqlite.Open(dbFile), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	db.AutoMigrate(&Patron{})
+	err = db.AutoMigrate(&Patron{}, &Challenge{})
+	if err != nil {
+		return nil, ErrFailedToMigrateDB
+	}
 
 	return &PatronDB{
 		db: db,
 	}, nil
 }
 
-func (pdb *PatronDB) AddUser(userID string) error {
+func (pdb *PatronDB) AddUser(userID string, funds int) error {
 	result := pdb.db.FirstOrCreate(&Patron{
 		UserID: userID,
-		Funds:  1000,
+		Funds:  funds,
 	})
 	if result.Error != nil {
 		return result.Error
@@ -105,7 +124,7 @@ func (pdb *PatronDB) TakeFunds(userID string, amount int) (int, error) {
 	}
 
 	if patron.Funds-amount < 0 {
-		return 0, errors.New("Funds cannot be negative")
+		return 0, ErrFundsCannotBeNeg
 	}
 
 	result = pdb.db.Model(&patron).Update("funds", patron.Funds-amount)
@@ -168,6 +187,83 @@ func (pdb *PatronDB) ClearLottery() error {
 	result := pdb.db.Model(&Patron{}).Where("1 = 1").Update("lottery_roll", 0)
 	if result.Error != nil {
 		return ErrUnhandledError
+	}
+
+	return nil
+}
+
+// Challenge Functions
+
+func (pdb *PatronDB) CreateChallenge(userID string, contender string, amount int) error {
+	if amount < 0 {
+		return ErrInvalidAmount
+	}
+
+	var patron Patron
+	result := pdb.db.First(&patron, "user_id = ?", userID)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if patron.Funds-amount < 0 {
+		return ErrFundsCannotBeNeg
+	}
+
+	if patron.Challenge.Contender != "" {
+		return ErrChallengeAlreadyPosed
+	}
+
+	result = pdb.db.Model(&patron).Update("funds", patron.Funds-amount)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	result = pdb.db.FirstOrCreate(&Challenge{
+		Challenger: patron.UserID,
+		Contender:  contender,
+		Escrow:     amount,
+	})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrChallengeAlreadyPosed
+	}
+
+	return nil
+}
+
+func (pdb *PatronDB) GetChallenge(userID string) (int, error) {
+	var patron Patron
+	result := pdb.db.Preload("Challenge").First(&patron, "user_id = ?", userID)
+
+	if result.Error != nil {
+		switch result.Error {
+		case gorm.ErrRecordNotFound:
+			return 0, ErrChallengeNotFound
+		default:
+			return 0, ErrUnhandledError
+		}
+	}
+
+	if patron.Challenge.Contender == "" {
+		return 0, ErrChallengeNotFound
+	}
+
+	return patron.Challenge.Escrow, nil
+}
+
+func (pdb *PatronDB) ClearChallenge(userID string) error {
+	result := pdb.db.Delete(&Challenge{}, userID)
+	if result.Error != nil {
+		switch result.Error {
+		case gorm.ErrRecordNotFound:
+			return ErrChallengeNotFound
+		default:
+			return ErrUnhandledError
+		}
 	}
 
 	return nil

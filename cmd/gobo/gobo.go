@@ -10,6 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
 	"github.com/pdfkpb/gobo/pkg/games/dice"
+	"github.com/pdfkpb/gobo/pkg/games/dicechallenge"
 	"github.com/pdfkpb/gobo/pkg/games/lottery"
 )
 
@@ -82,15 +83,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		admin.Check(params, s, m)
 	case "register":
 		admin.RegisterUser(params, s, m)
+	case "br":
+		admin.BulkRegister(params, s, m)
 	case "dice":
 		dice.Play(params, s, m)
+	case "dc":
+		dicechallenge.Play(params, s, m)
 	case "roll":
 		lottery.Play(params, s, m)
 	case "help":
-		gamesHelp := fmt.Sprintf("Games: \n```%s\n%s```", dice.HelpPlay, lottery.HelpPlay)
+		gamesHelp := fmt.Sprintf("Games:\n```%s\n%s\n%s```", dice.HelpPlay, lottery.HelpPlay, dicechallenge.HelpPlay)
 		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
-		adminHelp := fmt.Sprintf("Admin: \n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
+		adminHelp := fmt.Sprintf("Admin: params in brackets require admin priveleges\n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
 		s.ChannelMessageSend(m.ChannelID, adminHelp)
 	default:
 		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")
@@ -98,8 +103,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func commandParse(cmd string) (string, []string, error) {
-	fmt.Println(cmd)
-
 	if !strings.HasPrefix(cmd, "!") && !strings.HasPrefix(cmd, "\\!") {
 		return "", []string{}, errors.New(errNotMe)
 	}

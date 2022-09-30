@@ -42,7 +42,7 @@ func RegisterUser(params []string, s *discordgo.Session, m *discordgo.MessageCre
 		registerID = newUser.ID
 	}
 
-	err = patronDB.AddUser(registerID)
+	err = patronDB.AddUser(registerID, 1000)
 	if err != nil {
 		fmt.Printf("failed to AddUser: %v\n", err)
 		switch err {
