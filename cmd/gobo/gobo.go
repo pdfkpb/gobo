@@ -32,6 +32,10 @@ func init() {
 		commands.Give:         admin.Give,
 		commands.Register:     admin.RegisterUser,
 		commands.Take:         admin.Take,
+
+		commands.Dice:          dice.Dice,
+		commands.DiceChallenge: dicechallenge.DiceChallenge,
+		commands.Lottery:       lottery.LotteryRoll,
 	}
 }
 

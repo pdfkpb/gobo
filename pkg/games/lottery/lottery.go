@@ -9,15 +9,15 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
+	"github.com/pdfkpb/gobo/pkg/userid"
 )
 
-// Ensure we match the games.Play function definition
 var _ commands.Exec = LotteryRoll
 
 const HelpPlay = "Lottery:\n\t!roll"
 const payout = 720
 
-func LotterRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
+func LotteryRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load PatronDB: %v\n", err)
@@ -34,8 +34,14 @@ func LotterRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo.
 	roll, _ := rand.Int(rand.Reader, big.NewInt(100))
 	realRoll := int(roll.Int64() + 1)
 
-	userID := m.Author.ID
-	err = patronDB.SetLotteryRoll(userID, realRoll)
+	userID, err := userid.GetUserID(m.Author.ID)
+	if err != nil {
+		fmt.Printf("lottery failed to GetUserID: %v\n", err)
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		return
+	}
+
+	err = patronDB.SetLotteryRoll(string(userID), realRoll)
 	if err != nil {
 		switch err {
 		case patron.ErrAlreadyLotteryRolled:
@@ -59,11 +65,20 @@ func LotterRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo.
 		}
 	}
 
+	var currentWinnerIDs []string
+	for _, cWinner := range currentWinners {
+		userID, err := userid.GetUserID(cWinner)
+		if err != nil {
+			fmt.Printf("lottery failed to GetUserID: %v\n", err)
+		}
+		currentWinnerIDs = append(currentWinnerIDs, userID.Mention())
+	}
+
 	switch len(currentWinners) {
 	case 1:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, Current Winner is <@%s> with a %d", userID, realRoll, currentWinners[0], currWinnerRoll))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s rolled a %d, Current Winner is %s with a %d", userID.Mention(), realRoll, currentWinnerIDs[0], currWinnerRoll))
 	default:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, <@%s> all winning with a %d", userID, realRoll, strings.Join(currentWinners, "><@"), currWinnerRoll))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s rolled a %d, %s all winning with a %d", userID.Mention(), realRoll, strings.Join(currentWinnerIDs, " "), currWinnerRoll))
 	}
 }
 
