@@ -6,11 +6,12 @@ import (
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/games"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-func challenge(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func challenge(patronDB *patron.PatronDB, params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	match, err := regexp.Match("<@[0-9]{18}>", []byte(params[0]))
 	if !match || err != nil {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Not a user id"))

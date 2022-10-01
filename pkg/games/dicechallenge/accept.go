@@ -4,30 +4,30 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
-	"regexp"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/games"
 	"github.com/pdfkpb/gobo/pkg/patron"
+	"github.com/pdfkpb/gobo/pkg/userid"
 )
 
-func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
-	match, err := regexp.Match("<@[0-9]{18}>", []byte(params[0]))
-	if !match || err != nil {
+func accept(patronDB *patron.PatronDB, params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
+	userID := params[0]
+	if userID.Type() != commands.ParamTypeUserID {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Not a user id"))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage:\n```%s```", HelpPlay))
 		return
 	}
 
-	uid := params[0][2:20]
-	user, err := s.User(uid)
+	challengerID := userID.UserID()
+	user, err := s.User(string(challengerID))
 	if err != nil || user == nil {
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", params[0]))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", challengerID.Mention()))
 		return
 	}
-	challengerID := user.ID
 
-	challengeAmount, err := patronDB.GetChallenge(challengerID)
+	challengeAmount, err := patronDB.GetChallenge(string(challengerID))
 	if err != nil {
 		switch err {
 		case patron.ErrChallengeNotFound:
@@ -39,8 +39,14 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 		return
 	}
 
-	contenderID := m.Author.ID
-	funds, err := patronDB.TakeFunds(contenderID, challengeAmount)
+	contenderID, err := userid.GetUserID(m.Author.Mention())
+	if err != nil {
+		fmt.Printf("dicechallenge:accept failed to GetUserID: %v\n", err)
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
+		return
+	}
+
+	funds, err := patronDB.TakeFunds(string(contenderID), challengeAmount)
 	if err != nil {
 		switch err {
 		case patron.ErrFundsCannotBeNeg:
@@ -62,19 +68,19 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 	var winningRoll int
 	var losingRoll int
 	if challengerRoll == contenderRoll {
-		_, err = patronDB.AddFunds(challengerID, games.TakeHouseCut(challengeAmount))
+		_, err = patronDB.AddFunds(string(challengerID), games.TakeHouseCut(challengeAmount))
 		if err != nil {
 			fmt.Printf("dicechallenge:accept failed to AddFunds %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 			return
 		}
-		_, err = patronDB.AddFunds(contenderID, games.TakeHouseCut(challengeAmount))
+		_, err = patronDB.AddFunds(string(contenderID), games.TakeHouseCut(challengeAmount))
 		if err != nil {
 			fmt.Printf("dicechallenge:accept failed to AddFunds %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 			return
 		}
-		err = patronDB.ClearChallenge(challengerID)
+		err = patronDB.ClearChallenge(string(challengerID))
 		if err != nil {
 			fmt.Printf("dicechallenge:accept failed to ClearChallenge %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
@@ -82,11 +88,11 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 		}
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Y'all Tied, Congrats!"))
 	} else if challengerRoll > contenderRoll {
-		giveFunds = challengerID
+		giveFunds = challengerID.Mention()
 		winningRoll = int(challengerRoll)
 		losingRoll = int(contenderRoll)
 	} else if challengerRoll < contenderRoll {
-		giveFunds = contenderID
+		giveFunds = contenderID.Mention()
 		winningRoll = int(contenderRoll)
 		losingRoll = int(challengerRoll)
 	}
@@ -98,5 +104,5 @@ func accept(patronDB *patron.PatronDB, params []string, s *discordgo.Session, m 
 		return
 	}
 
-	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> won %d to %d your take is %d", giveFunds, winningRoll, losingRoll, games.TakeHouseCut(challengeAmount*2)))
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s won %d to %d your take is %d", giveFunds, winningRoll, losingRoll, games.TakeHouseCut(challengeAmount*2)))
 }
