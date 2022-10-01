@@ -28,13 +28,14 @@ func DiceChallenge(params []commands.Parameter, s *discordgo.Session, m *discord
 		return
 	}
 
+	cancelParam := params[0]
+	if cancelParam.Type() == commands.ParamTypeString {
+		cancel(patronDB, params, s, m)
+	}
+
 	switch len(params) {
 	case 1:
-		if params[0] == "cancel" {
-			cancel(patronDB, params, s, m)
-		} else {
-			accept(patronDB, params, s, m)
-		}
+		accept(patronDB, params, s, m)
 	case 2:
 		challenge(patronDB, params, s, m)
 	default:
