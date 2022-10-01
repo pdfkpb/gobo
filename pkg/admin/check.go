@@ -21,7 +21,7 @@ func Check(params []commands.Parameter, s *discordgo.Session, m *discordgo.Messa
 		return
 	}
 
-	checkID, err := userid.GetUserID(m.Author.ID)
+	checkID, err := userid.GetUserID(m.Author.Mention())
 	if err != nil {
 		fmt.Printf("failed to GetUserID: %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))

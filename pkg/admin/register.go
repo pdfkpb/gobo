@@ -21,7 +21,7 @@ func RegisterUser(params []commands.Parameter, s *discordgo.Session, m *discordg
 		return
 	}
 
-	registerID, err := userid.GetUserID(m.Author.ID)
+	registerID, err := userid.GetUserID(m.Author.Mention())
 	if err != nil {
 		fmt.Printf("failed to GetUserID: %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
@@ -30,7 +30,7 @@ func RegisterUser(params []commands.Parameter, s *discordgo.Session, m *discordg
 
 	if len(params) > 0 {
 		if !ChatPox.IsAdmin(m.Author.ID) {
-			fmt.Printf("user <@%s> tried register %s\n", m.Author.ID, params[0])
+			fmt.Printf("user %s tried register %s\n", registerID, params[0].UserID().Mention())
 			s.ChannelMessageSend(m.ChannelID, "Hey, knock it off")
 			return
 		}
