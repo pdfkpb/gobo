@@ -39,18 +39,12 @@ func accept(patronDB *patron.PatronDB, params []commands.Parameter, s *discordgo
 		return
 	}
 
-	contenderID, err := userid.GetUserID(m.Author.Mention())
-	if err != nil {
-		fmt.Printf("dicechallenge:accept failed to GetUserID: %v\n", err)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
-		return
-	}
-
+	contenderID := userid.UserID(m.Author.ID)
 	funds, err := patronDB.TakeFunds(string(contenderID), challengeAmount)
 	if err != nil {
 		switch err {
 		case patron.ErrFundsCannotBeNeg:
-			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Insufficent funds, <@%s> only has %d monies", challengerID, funds))
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Insufficent funds, %s only has %d monies", challengerID.Mention(), funds))
 			return
 		default:
 			fmt.Printf("dicechallenge:accept failed to TakeFunds %v\n", err)
@@ -64,7 +58,7 @@ func accept(patronDB *patron.PatronDB, params []commands.Parameter, s *discordgo
 	challengerRoll := one.Int64() + 1
 	contenderRoll := two.Int64() + 1
 
-	var giveFunds string
+	var giveFunds userid.UserID
 	var winningRoll int
 	var losingRoll int
 	if challengerRoll == contenderRoll {
@@ -88,21 +82,21 @@ func accept(patronDB *patron.PatronDB, params []commands.Parameter, s *discordgo
 		}
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Y'all Tied, Congrats!"))
 	} else if challengerRoll > contenderRoll {
-		giveFunds = challengerID.Mention()
+		giveFunds = challengerID
 		winningRoll = int(challengerRoll)
 		losingRoll = int(contenderRoll)
 	} else if challengerRoll < contenderRoll {
-		giveFunds = contenderID.Mention()
+		giveFunds = contenderID
 		winningRoll = int(contenderRoll)
 		losingRoll = int(challengerRoll)
 	}
 
-	_, err = patronDB.AddFunds(giveFunds, games.TakeHouseCut(challengeAmount*2))
+	_, err = patronDB.AddFunds(string(giveFunds), games.TakeHouseCut(challengeAmount*2))
 	if err != nil {
 		fmt.Printf("dicechallenge:accept failed to AddFunds %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
 		return
 	}
 
-	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s won %d to %d your take is %d", giveFunds, winningRoll, losingRoll, games.TakeHouseCut(challengeAmount*2)))
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s won %d to %d your take is %d", giveFunds.Mention(), winningRoll, losingRoll, games.TakeHouseCut(challengeAmount*2)))
 }

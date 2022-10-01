@@ -30,7 +30,7 @@ var commandMap = map[Command]string{
 	Take:          "take",
 	Dice:          "dice",
 	DiceChallenge: "dc",
-	Lottery:       "lottery",
+	Lottery:       "roll",
 }
 
 func commandFromString(cmdStr string) Command {

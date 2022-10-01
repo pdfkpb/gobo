@@ -34,13 +34,7 @@ func LotteryRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo
 	roll, _ := rand.Int(rand.Reader, big.NewInt(100))
 	realRoll := int(roll.Int64() + 1)
 
-	userID, err := userid.GetUserID(m.Author.ID)
-	if err != nil {
-		fmt.Printf("lottery failed to GetUserID: %v\n", err)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
-		return
-	}
-
+	userID := userid.UserID(m.Author.ID)
 	err = patronDB.SetLotteryRoll(string(userID), realRoll)
 	if err != nil {
 		switch err {
@@ -67,11 +61,8 @@ func LotteryRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo
 
 	var currentWinnerIDs []string
 	for _, cWinner := range currentWinners {
-		userID, err := userid.GetUserID(cWinner)
-		if err != nil {
-			fmt.Printf("lottery failed to GetUserID: %v\n", err)
-		}
-		currentWinnerIDs = append(currentWinnerIDs, userID.Mention())
+		tID := userid.UserID(cWinner)
+		currentWinnerIDs = append(currentWinnerIDs, tID.Mention())
 	}
 
 	switch len(currentWinners) {

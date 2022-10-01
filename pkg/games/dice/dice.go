@@ -43,13 +43,7 @@ func Dice(params []commands.Parameter, s *discordgo.Session, m *discordgo.Messag
 		return
 	}
 
-	userID, err := userid.GetUserID(m.Author.Mention())
-	if err != nil {
-		fmt.Printf("dice failed to GetUserID %v\n", err)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
-		return
-	}
-
+	userID := userid.UserID(m.Author.ID)
 	funds, err := patronDB.CheckFunds(string(userID))
 	if err != nil {
 		fmt.Printf("dice failed to get user funds %v\n", err)
