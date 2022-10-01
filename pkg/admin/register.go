@@ -9,7 +9,7 @@ import (
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-var _ commands.Exec = (RegisterUser)(nil)
+var _ commands.Exec = RegisterUser
 
 const HelpRegister = "!register [@SomeUser]"
 

@@ -8,7 +8,7 @@ import (
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-var _ commands.Exec = (BulkRegister)(nil)
+var _ commands.Exec = BulkRegister
 
 func BulkRegister(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !ChatPox.IsAdmin(m.Author.ID) {

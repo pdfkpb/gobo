@@ -10,7 +10,7 @@ import (
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-var _ commands.Exec = (Give)(nil)
+var _ commands.Exec = Give
 
 var HelpGive = "!give @SomeUser <some_amount>"
 

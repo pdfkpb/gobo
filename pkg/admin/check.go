@@ -9,7 +9,7 @@ import (
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-var _ commands.Exec = (Check)(nil)
+var _ commands.Exec = Check
 
 const HelpCheck = "!check [@SomeUser]"
 
