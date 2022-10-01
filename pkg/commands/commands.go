@@ -11,6 +11,7 @@ const (
 	Help
 	//Admin
 	BulkRegister
+	Register
 	Check
 	Give
 	Take
@@ -23,6 +24,7 @@ const (
 var commandMap = map[Command]string{
 	Unknown:       "unknown",
 	BulkRegister:  "bulkRegister",
+	Register:      "register",
 	Check:         "check",
 	Give:          "give",
 	Take:          "take",

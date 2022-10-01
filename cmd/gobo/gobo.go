@@ -8,7 +8,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
 	"github.com/pdfkpb/gobo/pkg/commands"
-	"github.com/pdfkpb/gobo/pkg/games"
 	"github.com/pdfkpb/gobo/pkg/games/dice"
 	"github.com/pdfkpb/gobo/pkg/games/dicechallenge"
 	"github.com/pdfkpb/gobo/pkg/games/lottery"
@@ -20,12 +19,20 @@ const (
 
 var (
 	Token        string
-	command2Func map[commands.Command]games.Play
+	command2Func map[commands.Command]commands.Exec
 )
 
 func init() {
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
+
+	command2Func = map[commands.Command]commands.Exec{
+		commands.BulkRegister: admin.BulkRegister,
+		commands.Check:        admin.Check,
+		commands.Give:         admin.Give,
+		commands.Register:     admin.RegisterUser,
+		commands.Take:         admin.Take,
+	}
 }
 
 func main() {
