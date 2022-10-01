@@ -1,4 +1,4 @@
-package commandparser
+package commands
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ type ParsedCommand struct {
 func ParseCommand(raw string) (*ParsedCommand, error) {
 	splitCmd := strings.Split(raw, " ")
 
-	var cmd Command
+	cmd := splitCmd[0]
 	if !strings.HasPrefix(cmd, "!") && !strings.HasPrefix(cmd, "\\!") {
 		return nil, ErrNotACommand
 	}
@@ -26,7 +26,10 @@ func ParseCommand(raw string) (*ParsedCommand, error) {
 		cmd = cmd[1:]
 	}
 
-	pCmd := &ParsedCommand{}
+	pCmd := &ParsedCommand{
+		Command: commandFromString(cmd[1:]),
+	}
+
 	for _, value := range splitCmd[1:] {
 		pCmd.Params = append(pCmd.Params, *ParseParameter(value))
 	}

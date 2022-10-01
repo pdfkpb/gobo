@@ -1,6 +1,7 @@
-package commandparser
+package commands
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -34,9 +35,18 @@ func ParseParameter(raw string) *Parameter {
 
 	// Generate UserID Param
 	userID, err := userid.GetUserID(lower)
-	if err != nil {
+	if err == nil {
 		param.pType = ParamTypeUserID
 		param.value = userID
+		return param
+	}
+
+	// Generate Integer Param
+	fmt.Println(trimmed)
+	integer, err := strconv.Atoi(trimmed)
+	if err == nil {
+		param.pType = ParamTypeInteger
+		param.value = integer
 		return param
 	}
 
@@ -45,14 +55,6 @@ func ParseParameter(raw string) *Parameter {
 	if err == nil {
 		param.pType = ParamTypeFloat
 		param.value = (float32)(float)
-		return param
-	}
-
-	// Generate Integer Param
-	integer, err := strconv.Atoi(trimmed)
-	if err == nil {
-		param.pType = ParamTypeInteger
-		param.value = integer
 		return param
 	}
 

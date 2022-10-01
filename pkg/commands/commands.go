@@ -1,4 +1,4 @@
-package commandparser
+package commands
 
 type Command int64
 
@@ -24,6 +24,15 @@ var commandMap = map[Command]string{
 	Dice:          "dice",
 	DiceChallenge: "diceChallenge",
 	Lottery:       "lottery",
+}
+
+func commandFromString(cmdStr string) Command {
+	for k, v := range commandMap {
+		if v == cmdStr {
+			return k
+		}
+	}
+	return Unknown
 }
 
 func (c *Command) String() string {
