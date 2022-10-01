@@ -1,9 +1,10 @@
 package commandparser
 
 import (
-	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pdfkpb/gobo/pkg/userid"
 )
 
 type ParameterType int64
@@ -15,8 +16,6 @@ const (
 	ParamTypeFloat
 	ParamTypeUserID
 )
-
-var userIDReg = regexp.MustCompile("<@[0-9]{18}>")
 
 type Parameter struct {
 	Raw string
@@ -34,10 +33,10 @@ func ParseParameter(raw string) *Parameter {
 	}
 
 	// Generate UserID Param
-	isUserID := userIDReg.Match([]byte(lower))
-	if isUserID {
+	userID, err := userid.GetUserID(lower)
+	if err != nil {
 		param.pType = ParamTypeUserID
-		param.value = lower
+		param.value = userID
 		return param
 	}
 
@@ -45,7 +44,7 @@ func ParseParameter(raw string) *Parameter {
 	float, err := strconv.ParseFloat(trimmed, 32)
 	if err == nil {
 		param.pType = ParamTypeFloat
-		param.value = float
+		param.value = (float32)(float)
 		return param
 	}
 
@@ -65,4 +64,36 @@ func ParseParameter(raw string) *Parameter {
 
 func (p *Parameter) Type() ParameterType {
 	return p.pType
+}
+
+func (p *Parameter) String() string {
+	if str, ok := p.value.(string); ok {
+		return str
+	}
+
+	return ""
+}
+
+func (p *Parameter) Integer() int {
+	if integer, ok := p.value.(int); ok {
+		return integer
+	}
+
+	return 0
+}
+
+func (p *Parameter) Float() float32 {
+	if f32, ok := p.value.(float32); ok {
+		return f32
+	}
+
+	return 0.0
+}
+
+func (p *Parameter) UserID() userid.UserID {
+	if userID, ok := p.value.(userid.UserID); ok {
+		return userID
+	}
+
+	return ""
 }

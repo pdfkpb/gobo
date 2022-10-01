@@ -1,10 +1,8 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -100,23 +98,4 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	default:
 		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")
 	}
-}
-
-func commandParse(cmd string) (string, []string, error) {
-	if !strings.HasPrefix(cmd, "!") && !strings.HasPrefix(cmd, "\\!") {
-		return "", []string{}, errors.New(errNotMe)
-	}
-
-	if strings.HasPrefix(cmd, "\\!") {
-		cmd = cmd[1:]
-	}
-
-	pCmd := strings.Split(cmd, " ")
-	trueCmd := pCmd[0][1:]
-	params := []string{}
-	if len(pCmd) > 1 {
-		params = pCmd[1:]
-	}
-
-	return trueCmd, params, nil
 }
