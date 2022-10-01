@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/games"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-var _ games.Play = Play
+var _ commands.Exec = DiceChallenge
 
 const (
 	helpChallenge = "!dc @SomePlayer <amount>"
@@ -20,7 +20,7 @@ var (
 	HelpPlay = fmt.Sprintf("Dice Challenge:\n\tChallenge: %s\n\tAccept: %s\n\tCancel: %s", helpChallenge, helpAccept, helpCancel)
 )
 
-func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func DiceChallenge(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load patronDB: %v\n", err)

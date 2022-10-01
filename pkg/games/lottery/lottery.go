@@ -7,17 +7,17 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/games"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
 // Ensure we match the games.Play function definition
-var _ games.Play = Play
+var _ commands.Exec = LotteryRoll
 
 const HelpPlay = "Lottery:\n\t!roll"
 const payout = 720
 
-func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func LotterRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load PatronDB: %v\n", err)

@@ -8,16 +8,15 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/games"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-// Ensure we match the games.Play function definition
-var _ games.Play = Play
+var _ commands.Exec = Dice
 
 const HelpPlay = "O'er Under:\n\t!dice <amount> over | under"
 
-func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func Dice(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load patronDB: %v\n", err)
