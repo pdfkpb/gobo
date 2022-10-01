@@ -29,7 +29,7 @@ var commandMap = map[Command]string{
 	Give:          "give",
 	Take:          "take",
 	Dice:          "dice",
-	DiceChallenge: "diceChallenge",
+	DiceChallenge: "dc",
 	Lottery:       "lottery",
 }
 
