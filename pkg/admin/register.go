@@ -2,11 +2,11 @@ package admin
 
 import (
 	"fmt"
-	"regexp"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
+	"github.com/pdfkpb/gobo/pkg/userid"
 )
 
 var _ commands.Exec = RegisterUser
@@ -21,7 +21,13 @@ func RegisterUser(params []commands.Parameter, s *discordgo.Session, m *discordg
 		return
 	}
 
-	registerID := m.Author.ID
+	registerID, err := userid.GetUserID(m.Author.ID)
+	if err != nil {
+		fmt.Printf("failed to GetUserID: %v\n", err)
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
+		return
+	}
+
 	if len(params) > 0 {
 		if !ChatPox.IsAdmin(m.Author.ID) {
 			fmt.Printf("user <@%s> tried register %s\n", m.Author.ID, params[0])
@@ -29,28 +35,27 @@ func RegisterUser(params []commands.Parameter, s *discordgo.Session, m *discordg
 			return
 		}
 
-		match, err := regexp.Match("<@[0-9]{18}>", []byte(params[0]))
-		if !match || err != nil {
+		userID := params[0]
+		if userID.Type() != commands.ParamTypeUserID {
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Not a user id"))
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpRegister))
 			return
 		}
 
-		uid := params[0][2:20]
-		newUser, err := s.User(uid)
+		registerID = userID.UserID()
+		newUser, err := s.User(string(registerID))
 		if err != nil || newUser == nil {
-			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", params[0]))
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", registerID.Mention()))
 			return
 		}
-		registerID = newUser.ID
 	}
 
-	err = patronDB.AddUser(registerID, 1000)
+	err = patronDB.AddUser(string(registerID), 1000)
 	if err != nil {
 		fmt.Printf("failed to AddUser: %v\n", err)
 		switch err {
 		case patron.ErrorUserAlreadyRegistered:
-			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> is already Registered", registerID))
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s is already Registered", registerID.Mention()))
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Check your balance with: %s", HelpCheck))
 		default:
 			s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))
@@ -58,5 +63,5 @@ func RegisterUser(params []commands.Parameter, s *discordgo.Session, m *discordg
 		return
 	}
 
-	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> has 1000 monies", registerID))
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s has 1000 monies", registerID.Mention()))
 }
