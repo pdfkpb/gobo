@@ -5,12 +5,15 @@ import (
 	"regexp"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
+var _ commands.Exec = (Check)(nil)
+
 const HelpCheck = "!check [@SomeUser]"
 
-func Check(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func Check(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load patronDB: %v\n", err)

@@ -1,9 +1,14 @@
 package commands
 
+import "github.com/bwmarrin/discordgo"
+
+type Exec func([]Parameter, *discordgo.Session, *discordgo.MessageCreate)
+
 type Command int64
 
 const (
 	Unknown Command = iota
+	Help
 	//Admin
 	BulkRegister
 	Check

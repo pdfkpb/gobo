@@ -7,6 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
+	"github.com/pdfkpb/gobo/pkg/commands"
+	"github.com/pdfkpb/gobo/pkg/games"
 	"github.com/pdfkpb/gobo/pkg/games/dice"
 	"github.com/pdfkpb/gobo/pkg/games/dicechallenge"
 	"github.com/pdfkpb/gobo/pkg/games/lottery"
@@ -17,7 +19,8 @@ const (
 )
 
 var (
-	Token string
+	Token        string
+	command2Func map[commands.Command]games.Play
 )
 
 func init() {
@@ -63,39 +66,24 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	cmd, params, err := commandParse(m.Content)
+	command, err := commands.ParseCommand(m.Content)
 	if err != nil {
-		if err.Error() == errNotMe {
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, "The fuck are you on about?")
-		return
+
 	}
 
-	switch cmd {
-	case "give":
-		admin.Give(params, s, m)
-	case "take":
-		admin.Take(params, s, m)
-	case "check":
-		admin.Check(params, s, m)
-	case "register":
-		admin.RegisterUser(params, s, m)
-	case "br":
-		admin.BulkRegister(params, s, m)
-	case "dice":
-		dice.Play(params, s, m)
-	case "dc":
-		dicechallenge.Play(params, s, m)
-	case "roll":
-		lottery.Play(params, s, m)
-	case "help":
+	if command.Command == commands.Help {
 		gamesHelp := fmt.Sprintf("Games:\n```%s\n%s\n%s```", dice.HelpPlay, lottery.HelpPlay, dicechallenge.HelpPlay)
 		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
 		adminHelp := fmt.Sprintf("Admin: params in brackets require admin priveleges\n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
 		s.ChannelMessageSend(m.ChannelID, adminHelp)
-	default:
-		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")
+		return
 	}
+
+	if command.Command == commands.Unknown {
+		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")
+		return
+	}
+
+	command2Func[command.Command](command.Params, s, m)
 }

@@ -6,12 +6,15 @@ import (
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
+var _ commands.Exec = (Give)(nil)
+
 var HelpGive = "!give @SomeUser <some_amount>"
 
-func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func Give(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !ChatPox.IsAdmin(m.Author.ID) {
 		fmt.Printf("user %s tried to give funds: %v\n", m.Author.Username, ErrNotAdmin)
 		s.ChannelMessageSend(m.ChannelID, "Hey, knock it off")
