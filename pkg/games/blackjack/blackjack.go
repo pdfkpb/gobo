@@ -8,12 +8,15 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
+var _ commands.Exec = BlackJack
+
 const HelpPlay = "!bj <buy in amount>"
 
-func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func BlackJack(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load patronDB: %v\n", err)

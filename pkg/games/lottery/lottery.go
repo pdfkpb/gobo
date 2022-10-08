@@ -7,17 +7,17 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/pdfkpb/gobo/pkg/games"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
+	"github.com/pdfkpb/gobo/pkg/userid"
 )
 
-// Ensure we match the games.Play function definition
-var _ games.Play = Play
+var _ commands.Exec = LotteryRoll
 
 const HelpPlay = "Lottery:\n\t!roll"
 const payout = 720
 
-func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func LotteryRoll(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	patronDB, err := patron.LoadPatronDB()
 	if err != nil {
 		fmt.Printf("failed to load PatronDB: %v\n", err)
@@ -34,8 +34,8 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	roll, _ := rand.Int(rand.Reader, big.NewInt(100))
 	realRoll := int(roll.Int64() + 1)
 
-	userID := m.Author.ID
-	err = patronDB.SetLotteryRoll(userID, realRoll)
+	userID := userid.UserID(m.Author.ID)
+	err = patronDB.SetLotteryRoll(string(userID), realRoll)
 	if err != nil {
 		switch err {
 		case patron.ErrAlreadyLotteryRolled:
@@ -59,11 +59,17 @@ func Play(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
+	var currentWinnerIDs []string
+	for _, cWinner := range currentWinners {
+		tID := userid.UserID(cWinner)
+		currentWinnerIDs = append(currentWinnerIDs, tID.Mention())
+	}
+
 	switch len(currentWinners) {
 	case 1:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, Current Winner is <@%s> with a %d", userID, realRoll, currentWinners[0], currWinnerRoll))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s rolled a %d, Current Winner is %s with a %d", userID.Mention(), realRoll, currentWinnerIDs[0], currWinnerRoll))
 	default:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> rolled a %d, <@%s> all winning with a %d", userID, realRoll, strings.Join(currentWinners, "><@"), currWinnerRoll))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s rolled a %d, %s all winning with a %d", userID.Mention(), realRoll, strings.Join(currentWinnerIDs, " "), currWinnerRoll))
 	}
 }
 

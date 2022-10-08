@@ -2,16 +2,17 @@ package admin
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
+var _ commands.Exec = Give
+
 var HelpGive = "!give @SomeUser <some_amount>"
 
-func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+func Give(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !ChatPox.IsAdmin(m.Author.ID) {
 		fmt.Printf("user %s tried to give funds: %v\n", m.Author.Username, ErrNotAdmin)
 		s.ChannelMessageSend(m.ChannelID, "Hey, knock it off")
@@ -23,22 +24,21 @@ func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	match, err := regexp.Match("<@[0-9]{18}>", []byte(params[0]))
-	if !match || err != nil {
+	userID := params[0]
+	if userID.Type() != commands.ParamTypeUserID {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Not a user id"))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpGive))
 		return
 	}
 
-	uid := params[0][2:20]
-	giveTo, err := s.User(uid)
+	giveTo, err := s.User(string(userID.UserID()))
 	if err != nil || giveTo == nil {
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", params[0]))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", userID.UserID().Mention()))
 		return
 	}
 
-	amount, err := strconv.Atoi(params[1])
-	if err != nil {
+	amount := params[1]
+	if amount.Type() != commands.ParamTypeInteger {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Not a valid monies amount"))
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("  Usage: %s", HelpGive))
 		return
@@ -51,7 +51,7 @@ func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	currentFunds, err := patronDB.AddFunds(giveTo.ID, amount)
+	currentFunds, err := patronDB.AddFunds(giveTo.ID, amount.Integer())
 	if err != nil {
 		switch err {
 		case patron.ErrInvalidAmount:
@@ -64,5 +64,5 @@ func Give(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s has %d monies", params[0], currentFunds))
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s has %d monies", userID.UserID().Mention(), currentFunds))
 }

@@ -4,10 +4,13 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/patron"
 )
 
-func BulkRegister(params []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+var _ commands.Exec = BulkRegister
+
+func BulkRegister(params []commands.Parameter, s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !ChatPox.IsAdmin(m.Author.ID) {
 		fmt.Printf("user %s tried to register e'eryone: %v\n", m.Author.Username, ErrNotAdmin)
 		s.ChannelMessageSend(m.ChannelID, "Hey, knock it off")

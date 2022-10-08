@@ -1,14 +1,13 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/pdfkpb/gobo/pkg/admin"
+	"github.com/pdfkpb/gobo/pkg/commands"
 	"github.com/pdfkpb/gobo/pkg/games/dice"
 	"github.com/pdfkpb/gobo/pkg/games/dicechallenge"
 	"github.com/pdfkpb/gobo/pkg/games/lottery"
@@ -19,12 +18,25 @@ const (
 )
 
 var (
-	Token string
+	Token        string
+	command2Func map[commands.Command]commands.Exec
 )
 
 func init() {
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
+
+	command2Func = map[commands.Command]commands.Exec{
+		commands.BulkRegister: admin.BulkRegister,
+		commands.Check:        admin.Check,
+		commands.Give:         admin.Give,
+		commands.Register:     admin.RegisterUser,
+		commands.Take:         admin.Take,
+
+		commands.Dice:          dice.Dice,
+		commands.DiceChallenge: dicechallenge.DiceChallenge,
+		commands.Lottery:       lottery.LotteryRoll,
+	}
 }
 
 func main() {
@@ -65,58 +77,24 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	cmd, params, err := commandParse(m.Content)
-	if err != nil {
-		if err.Error() == errNotMe {
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, "The fuck are you on about?")
+	command, err := commands.ParseCommand(m.Content)
+	if err != nil || command == nil {
 		return
 	}
 
-	switch cmd {
-	case "give":
-		admin.Give(params, s, m)
-	case "take":
-		admin.Take(params, s, m)
-	case "check":
-		admin.Check(params, s, m)
-	case "register":
-		admin.RegisterUser(params, s, m)
-	case "br":
-		admin.BulkRegister(params, s, m)
-	case "dice":
-		dice.Play(params, s, m)
-	case "dc":
-		dicechallenge.Play(params, s, m)
-	case "roll":
-		lottery.Play(params, s, m)
-	case "help":
+	if command.Command == commands.Help {
 		gamesHelp := fmt.Sprintf("Games:\n```%s\n%s\n%s```", dice.HelpPlay, lottery.HelpPlay, dicechallenge.HelpPlay)
 		s.ChannelMessageSend(m.ChannelID, gamesHelp)
 
 		adminHelp := fmt.Sprintf("Admin: params in brackets require admin priveleges\n```\n%s\n%s```", admin.HelpCheck, admin.HelpRegister)
 		s.ChannelMessageSend(m.ChannelID, adminHelp)
-	default:
+		return
+	}
+
+	if command.Command == commands.Unknown {
 		s.ChannelMessageSend(m.ChannelID, "Gobo here, type `!help` to see a list of commands")
-	}
-}
-
-func commandParse(cmd string) (string, []string, error) {
-	if !strings.HasPrefix(cmd, "!") && !strings.HasPrefix(cmd, "\\!") {
-		return "", []string{}, errors.New(errNotMe)
+		return
 	}
 
-	if strings.HasPrefix(cmd, "\\!") {
-		cmd = cmd[1:]
-	}
-
-	pCmd := strings.Split(cmd, " ")
-	trueCmd := pCmd[0][1:]
-	params := []string{}
-	if len(pCmd) > 1 {
-		params = pCmd[1:]
-	}
-
-	return trueCmd, params, nil
+	command2Func[command.Command](command.Params, s, m)
 }
