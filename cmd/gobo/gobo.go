@@ -78,8 +78,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	command, err := commands.ParseCommand(m.Content)
-	if err != nil {
-
+	if err != nil || command == nil {
+		return
 	}
 
 	if command.Command == commands.Help {

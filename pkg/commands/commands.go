@@ -23,6 +23,7 @@ const (
 
 var commandMap = map[Command]string{
 	Unknown:       "unknown",
+	Help:          "help",
 	BulkRegister:  "bulkRegister",
 	Register:      "register",
 	Check:         "check",
