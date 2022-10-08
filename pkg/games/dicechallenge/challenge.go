@@ -39,7 +39,7 @@ func challenge(patronDB *patron.PatronDB, params []commands.Parameter, s *discor
 		return
 	}
 
-	challengerID, err := userid.GetUserID(m.Author.Mention())
+	challengerID := userid.UserID(m.Author.ID)
 	if err != nil {
 		fmt.Printf("dicechallenge:challenge failed to GetUserID %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprint("Some backend error occured <@384902507383619594> fix it"))

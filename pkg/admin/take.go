@@ -35,7 +35,7 @@ func Take(params []commands.Parameter, s *discordgo.Session, m *discordgo.Messag
 
 	takeFrom, err := s.User(string(userID.UserID()))
 	if err != nil || takeFrom == nil {
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", params[0]))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("User %s not found in this channel", userID.UserID().Mention()))
 		return
 	}
 

@@ -21,7 +21,7 @@ func RegisterUser(params []commands.Parameter, s *discordgo.Session, m *discordg
 		return
 	}
 
-	registerID, err := userid.GetUserID(m.Author.Mention())
+	registerID := userid.UserID(m.Author.ID)
 	if err != nil {
 		fmt.Printf("failed to GetUserID: %v\n", err)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Some backend error occured <@384902507383619594> fix it"))
